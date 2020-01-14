@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>family_graph.ui</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="src\box.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="src\box.ts" />
+  </ItemGroup>
+
+</Project>
