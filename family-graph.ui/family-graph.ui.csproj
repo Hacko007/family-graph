@@ -7,10 +7,12 @@
 
   <ItemGroup>
     <None Remove="src\box.ts" />
+    <None Remove="src\personBox.ts" />
   </ItemGroup>
 
   <ItemGroup>
     <TypeScriptCompile Include="src\box.ts" />
+    <TypeScriptCompile Include="src\personBox.ts" />
   </ItemGroup>
 
 </Project>

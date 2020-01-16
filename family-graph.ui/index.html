@@ -1,24 +1,70 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    
+    <link rel="stylesheet" type="text/css" href="assets/defaultStyle.css"/>
+
     <script src="src/box.js"></script>
+    <script src="src/personBox.js"></script>
+
     <script>
         function init() {
             let mainSvg = document.getElementById("main-svg");
             for (let i = 0; i < 40; i++) {
-                let box = new Box();
-                box.x = i * 300 + 10;
-                box.y = 300;
-                box.width = 250;
-                box.height = 100;                mainSvg.appendChild(box.createRect());    
+                if (i % 2 == 0) {
+                    let box = new MaleBox("John Doe "+i);
+                    box.x = i * (box.width + 50);
+                    box.y =  310 ;
+                    add(mainSvg, box);
+                } else {
+                    let box = new FemaleBox("F"+i);
+                    box.x = i * (box.width + 50);
+                    box.y = 310 ;
+                    add(mainSvg, box);
+                }
+                
             }
+
+
+
+            let box1 = new MaleBox("M");
+            box1.x =  510 ;
+            box1.y =  610 ;
+        
+            let box2 = new FemaleBox("F1");
+            box2.x = 910 ;
+            box2.y = 1210;
+
+            let box3 = new FemaleBox("F2");
+            box3.x = 210 ;
+            box3.y = 1210;
+
+            let box4 = new MaleBox("M2");
+            box4.x = 1500 ;
+            box4.y = 1210;
+
+
+            var l = box1.connectTo({ box2, box3,box4});
+            l.forEach(line => mainSvg.appendChild(line));
+
+            add(mainSvg, box1);
+            add(mainSvg, box2);
+            add(mainSvg, box3);
+            add(mainSvg, box4);
+
         }
+
+        function add(svg, box) {
+            var v = box.create();
+            v.forEach(e=>svg.appendChild(e));
+        }
+
     </script>
 
     <meta charset="utf-8" />
     <title>Family Graph</title>
 </head>
 <body onload="init()">
-<svg id="main-svg" viewBox="0 0 5000 1000"></svg>
+<svg id="main-svg" viewBox="0 0 5000 3000"></svg>
 </body>
 </html>
