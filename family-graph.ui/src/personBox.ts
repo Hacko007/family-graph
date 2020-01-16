@@ -6,8 +6,6 @@
 
     constructor(name:string, isMale:boolean) {
         super();
-        this.width = 400;
-        this.height = 250;
         this.name = name;
         this.isMale = isMale;
         if (isMale) {
@@ -32,7 +30,7 @@
     }
 
     create(): SVGElement[] {
-        var rect: SVGElement = super.getNode('rect',
+        var rect: SVGElement = PathHelper.getNode('rect',
             {
                 x: this.x,
                 y: this.y,
@@ -43,7 +41,7 @@
                 class: this._boxClass
     });
 
-        var text = this.getNode('text',
+        var text = PathHelper.getNode('text',
             {
                 x: this.x + 20,
                 y: this.y + 80,

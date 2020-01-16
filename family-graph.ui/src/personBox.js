@@ -17,8 +17,6 @@ var PersonBox = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this._classFemale = "female-box";
         _this._classMale = "male-box";
-        _this.width = 400;
-        _this.height = 250;
         _this.name = name;
         _this.isMale = isMale;
         if (isMale) {
@@ -50,7 +48,7 @@ var PersonBox = /** @class */ (function (_super) {
         configurable: true
     });
     PersonBox.prototype.create = function () {
-        var rect = _super.prototype.getNode.call(this, 'rect', {
+        var rect = PathHelper.getNode('rect', {
             x: this.x,
             y: this.y,
             width: this.width,
@@ -59,7 +57,7 @@ var PersonBox = /** @class */ (function (_super) {
             ry: 10,
             class: this._boxClass
         });
-        var text = this.getNode('text', {
+        var text = PathHelper.getNode('text', {
             x: this.x + 20,
             y: this.y + 80,
             class: 'persons-name'

@@ -1,5 +1,11 @@
+var BoxHorizontalSpace = 100;
+var BoxVerticalSpace = 100;
 var Box = /** @class */ (function () {
     function Box() {
+        this._x = 0;
+        this._y = 0;
+        this._height = 250;
+        this._width = 550;
         this._bgColor = "gray";
         this._boxClass = "unknown-box";
     }
@@ -55,35 +61,20 @@ var Box = /** @class */ (function () {
     });
     Box.prototype.connectTo = function (boxes) {
         var lines = new Array();
-        // if (boxes == null || boxes.length == 0) return null;
+        if (!boxes)
+            return lines;
         for (var i in boxes) {
             var box = boxes[i];
-            var line = this.drawLine(this, box);
+            var line = PathHelper.drawLine(this, box);
             lines.push(line);
         }
         return lines;
     };
-    Box.prototype.drawLine = function (box1, box2) {
-        var dx1 = box1.x + (box1.width / 2);
-        var dy1 = box1.y + (box1.height / 2);
-        var dx2 = box2.x + (box2.width / 2);
-        var dy2 = box2.y + (box2.height / 2);
-        var dy = ((dy1 + dy2) / 2);
-        var path = "M " + dx1 + " " + dy1 +
-            " L " + dx1 + " " + dy +
-            " L " + dx2 + " " + dy +
-            " L " + dx2 + " " + dy2 +
-            " ";
-        console.log(path);
-        var v = this.getNode('path', {
-            d: path,
-            class: 'path'
-        });
-        return v;
+    Box.prototype.connectToPoint = function (point) {
+        return PathHelper.drawLineFrom(point, this);
     };
-    ;
     Box.prototype.create = function () {
-        var rect = this.getNode('rect', {
+        var rect = PathHelper.getNode('rect', {
             x: this.x,
             y: this.y,
             width: this.width,
@@ -96,11 +87,33 @@ var Box = /** @class */ (function () {
         });
         return [rect];
     };
-    Box.prototype.getNode = function (tag, attr) {
-        var b = document.createElementNS("http://www.w3.org/2000/svg", tag);
-        for (var p in attr)
-            b.setAttributeNS(null, p, attr[p]);
-        return (b);
+    Box.makeSpaceHorizontally = function (boxes) {
+        for (var i in boxes) {
+            var box1 = boxes[i];
+            for (var j in boxes) {
+                if (i == j)
+                    continue;
+                var box2 = boxes[j];
+                if (box1.overlapping(box2) || box2.overlapping(box1)) {
+                    console.log(box1);
+                    console.log(box2);
+                    if (box2.x >= box1.x) {
+                        box2.x = box1.x + box1.width + BoxHorizontalSpace;
+                    }
+                    else {
+                        box1.x = box2.x + box2.width + BoxHorizontalSpace;
+                    }
+                    console.log(box1);
+                    console.log(box2);
+                }
+            }
+        }
+    };
+    Box.prototype.overlapping = function (b2) {
+        console.log(this.x + " <= " + b2.x + " && " + b2.x + " <= " + (this.x + this.width + BoxHorizontalSpace) + " && "
+            + this.y + " <= " + b2.y + " && " + b2.y + " <= " + (this.y + this.height + BoxVerticalSpace));
+        return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) &&
+            (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace));
     };
     return Box;
 }());

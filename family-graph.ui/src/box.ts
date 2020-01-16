@@ -1,8 +1,12 @@
-﻿class Box {
-    private _x: number;
-    private _y: number;
-    private _height: number;
-    private _width: number;
+﻿const BoxHorizontalSpace: number = 100;
+const BoxVerticalSpace: number = 100;
+
+class Box {
+    private _x: number= 0;
+    private _y: number = 0;
+    private _height: number = 250;
+    private _width: number = 550;
+    
     private _style: string;
     _bgColor: string = "gray";
     _boxClass: string =  "unknown-box";
@@ -49,46 +53,22 @@
     connectTo(boxes: Box[]): any {
         var lines = new Array();
 
-    
-       // if (boxes == null || boxes.length == 0) return null;
+        if (!boxes) return lines;
 
         for (var i in boxes) {
             let box = boxes[i];
-            let line = this.drawLine(this, box);
+            let line = PathHelper.drawLine(this, box);
             lines.push(line);
         }
         return lines;
     }
 
-
-    private drawLine(box1: Box, box2: Box): SVGElement {
-
-        let dx1 = box1.x + (box1.width / 2);
-        let dy1 = box1.y + (box1.height/ 2);
-
-        let dx2 = box2.x + (box2.width / 2);
-        let dy2 = box2.y + (box2.height / 2);
-        
-        let dy = ((dy1 + dy2) / 2);
-        
-        let path = "M " + dx1 + " " + dy1 +
-            " L " + dx1 + " " + dy +
-            " L " + dx2 + " " + dy +
-            " L " + dx2 + " " + dy2 +
-            " ";
-        
-        console.log(path);
-        var v = this.getNode('path',
-            {
-                d: path,
-                class:'path'
-            });
-        return v;
-
-    };
+    connectToPoint(point :DOMPoint): SVGElement{
+        return PathHelper.drawLineFrom(point, this);
+    }
 
     create(): SVGElement[] {
-        var rect : SVGElement = this.getNode('rect',
+        var rect: SVGElement = PathHelper.getNode('rect',
             {
                 x: this.x,
                 y: this.y,
@@ -103,10 +83,38 @@
         return  [rect];
     }
 
-    protected  getNode(tag: string, attr: any): SVGElement {
-        let b: SVGElement = document.createElementNS("http://www.w3.org/2000/svg", tag);
-        for (var p in attr)
-            b.setAttributeNS(null, p, attr[p]);
-        return (b) as any;
+
+    static makeSpaceHorizontally(boxes: Box[]) {
+        for (var i in boxes) {
+            let box1 = boxes[i];
+            for (var j in boxes) 
+            {
+                if (i == j) continue;
+
+                let box2 = boxes[j];
+                if (box1.overlapping(box2) || box2.overlapping(box1)) {
+                    console.log(box1);
+                    console.log(box2);
+                    if (box2.x >= box1.x) {
+                        box2.x = box1.x + box1.width + BoxHorizontalSpace;
+                    }
+                    else {
+                        box1.x = box2.x + box2.width + BoxHorizontalSpace;
+                    }
+                    console.log(box1);
+                    console.log(box2);
+                }
+            }
+        }
     }
+
+    overlapping(b2: Box) {
+        //console.log(this.x +" <= "+ b2.x +" && "+ b2.x +" <= " +(this.x + this.width + BoxHorizontalSpace) + " && "
+        //    + this.y +" <= "+  b2.y +" && "+ b2.y +" <= "+ (this.y + this.height + BoxVerticalSpace));
+
+        return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) && 
+            (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace)) 
+            ;
+    }
+
 }
