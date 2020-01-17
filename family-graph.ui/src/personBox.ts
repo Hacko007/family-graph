@@ -51,6 +51,31 @@
         return [ rect, text ];
     }
 
+    positionPartner(parnter: PersonBox) {
+        var space = BoxHorizontalSpace * 2;
+        parnter.y = this.y;
+        if (this.isMale) {
+            parnter.x = this.x + this.width + space;
+        } else {
+            this.x = parnter.x + parnter.width + space;
+        }
+    }
+
+    positionChildren(children: PersonBox[]) {
+        var space = BoxHorizontalSpace * 2;
+        if (!children) return;
+        var c = Math.max(1, children.length - 1);
+        var x = this.x - ((c * (this.width + space)) / 2);
+        var y = this.y + this.height + space;
+        for (var i in children) {
+            var child = children[i];
+            child.x = x;
+            child.y = y;
+            x += child.width + space;
+        }
+    }
+
+
 }
 
 class MaleBox extends PersonBox {
