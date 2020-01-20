@@ -8,13 +8,17 @@
   <ItemGroup>
     <None Remove="src\box.ts" />
     <None Remove="src\PathHelper.ts" />
+    <None Remove="src\Person.ts" />
     <None Remove="src\personBox.ts" />
+    <None Remove="src\Relation.ts" />
   </ItemGroup>
 
   <ItemGroup>
     <TypeScriptCompile Include="src\box.ts" />
     <TypeScriptCompile Include="src\PathHelper.ts" />
+    <TypeScriptCompile Include="src\Person.ts" />
     <TypeScriptCompile Include="src\personBox.ts" />
+    <TypeScriptCompile Include="src\Relation.ts" />
   </ItemGroup>
 
 </Project>

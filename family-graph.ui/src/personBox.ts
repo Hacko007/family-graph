@@ -1,14 +1,15 @@
 ﻿class PersonBox extends Box {
-    private _name: string;
+    person:Person;
+    
     private _isMale: boolean;
     private _classFemale: string = "female-box";
     private _classMale: string = "male-box";
 
-    constructor(name:string, isMale:boolean) {
+    constructor(person:Person) {
         super();
-        this.name = name;
-        this.isMale = isMale;
-        if (isMale) {
+        this.person = person;
+        this.isMale = person.gender === Gender.Male;
+        if (this.isMale) {
             this._boxClass = this._classMale;
         } else {
             this._boxClass = this._classFemale;
@@ -16,12 +17,9 @@
     }
 
     get name(): string {
-        return this._name;
+        return this.person.fullName;
     }
-    set name(value: string) {
-        this._name = value;
-    }
-
+    
     get isMale(): boolean{
         return this._isMale;
     }
@@ -76,16 +74,4 @@
     }
 
 
-}
-
-class MaleBox extends PersonBox {
-    constructor(name: string) {
-        super(name, true);
-    }
-}
-
-class FemaleBox extends PersonBox {
-    constructor(name: string) {
-        super(name, false);
-    }
 }

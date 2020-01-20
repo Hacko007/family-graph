@@ -13,13 +13,13 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var PersonBox = /** @class */ (function (_super) {
     __extends(PersonBox, _super);
-    function PersonBox(name, isMale) {
+    function PersonBox(person) {
         var _this = _super.call(this) || this;
         _this._classFemale = "female-box";
         _this._classMale = "male-box";
-        _this.name = name;
-        _this.isMale = isMale;
-        if (isMale) {
+        _this.person = person;
+        _this.isMale = person.gender === Gender.Male;
+        if (_this.isMale) {
             _this._boxClass = _this._classMale;
         }
         else {
@@ -29,10 +29,7 @@ var PersonBox = /** @class */ (function (_super) {
     }
     Object.defineProperty(PersonBox.prototype, "name", {
         get: function () {
-            return this._name;
-        },
-        set: function (value) {
-            this._name = value;
+            return this.person.fullName;
         },
         enumerable: true,
         configurable: true
@@ -65,20 +62,30 @@ var PersonBox = /** @class */ (function (_super) {
         text.textContent = this.name;
         return [rect, text];
     };
+    PersonBox.prototype.positionPartner = function (parnter) {
+        var space = BoxHorizontalSpace * 2;
+        parnter.y = this.y;
+        if (this.isMale) {
+            parnter.x = this.x + this.width + space;
+        }
+        else {
+            this.x = parnter.x + parnter.width + space;
+        }
+    };
+    PersonBox.prototype.positionChildren = function (children) {
+        var space = BoxHorizontalSpace * 2;
+        if (!children)
+            return;
+        var c = Math.max(1, children.length - 1);
+        var x = this.x - ((c * (this.width + space)) / 2);
+        var y = this.y + this.height + space;
+        for (var i in children) {
+            var child = children[i];
+            child.x = x;
+            child.y = y;
+            x += child.width + space;
+        }
+    };
     return PersonBox;
 }(Box));
-var MaleBox = /** @class */ (function (_super) {
-    __extends(MaleBox, _super);
-    function MaleBox(name) {
-        return _super.call(this, name, true) || this;
-    }
-    return MaleBox;
-}(PersonBox));
-var FemaleBox = /** @class */ (function (_super) {
-    __extends(FemaleBox, _super);
-    function FemaleBox(name) {
-        return _super.call(this, name, false) || this;
-    }
-    return FemaleBox;
-}(PersonBox));
 //# sourceMappingURL=personBox.js.map

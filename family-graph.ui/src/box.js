@@ -110,8 +110,8 @@ var Box = /** @class */ (function () {
         }
     };
     Box.prototype.overlapping = function (b2) {
-        console.log(this.x + " <= " + b2.x + " && " + b2.x + " <= " + (this.x + this.width + BoxHorizontalSpace) + " && "
-            + this.y + " <= " + b2.y + " && " + b2.y + " <= " + (this.y + this.height + BoxVerticalSpace));
+        //console.log(this.x +" <= "+ b2.x +" && "+ b2.x +" <= " +(this.x + this.width + BoxHorizontalSpace) + " && "
+        //    + this.y +" <= "+  b2.y +" && "+ b2.y +" <= "+ (this.y + this.height + BoxVerticalSpace));
         return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) &&
             (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace));
     };

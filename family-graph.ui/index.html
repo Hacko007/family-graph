@@ -6,30 +6,42 @@
 
     <script src="src/PathHelper.js"></script>
     <script src="src/box.js"></script>
+    <script src="src/Relation.js"></script>
+    <script src="src/Person.js"></script>
     <script src="src/personBox.js"></script>
 
     <script>
         function init() {
             let main = document.getElementById("main-svg");
 
+            var p1 = new Person(1, "Adam","A",Gender.Male, null, new Date(1,1,1,1,1,1,1 ), null);
+            var p2 = new Person(2, "Eve","E",Gender.Female, null, new Date(2,1,1,1,1,1,1 ), null);
+            var r = new Relation(p1, p2, null);
 
-            let box = new MaleBox("box");
+            var c1 = new Person(3, "Rambo","I",Gender.Male, null, new Date(1980,1,1,1,1,1,1 ), null);
+            var c2 = new Person(4, "Rambo","II",Gender.Male, null, new Date(1990,1,1,1,1,1,1 ), null);
+            var c3 = new Person(5, "Rambo","III",Gender.Male, null, new Date(1995,1,1,1,1,1,1 ), null);
+            r.addChildren({ c1, c2, c3 });
+
+
+
+            let box = new PersonBox(p1);
             box.x =  0 ;
             box.y =  10 ;
 
-            let box1 = new MaleBox("box1");
+            let box1 = new PersonBox(p2);
             box1.x =  0 ;
             box1.y =  10 ;
         
-            let box2 = new FemaleBox("box2");
+            let box2 =new PersonBox(c1);
             box2.x = 0 ;
             box2.y = 1210;
 
-            let box3 = new FemaleBox("box3");
+            let box3 =new PersonBox(c2);
             box3.x = 210 ;
             box3.y = 1210;
 
-            let box4 = new MaleBox("box4");
+            let box4 = new PersonBox(c3);
             box4.x = 1500 ;
             box4.y = 1210;
 
@@ -48,7 +60,8 @@
             add(main, box3);
             add(main, box4);
 
-            
+
+           
 
         }
 
