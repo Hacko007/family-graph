@@ -3,6 +3,8 @@ var PathHelper = /** @class */ (function () {
     }
     // Connect two boxes with line
     PathHelper.drawLine = function (box1, box2) {
+        if (!box1 || !box2)
+            return null;
         var dx1 = box1.x + (box1.width / 2);
         var dy1 = box1.y + (box1.height / 2);
         var dx2 = box2.x + (box2.width / 2);

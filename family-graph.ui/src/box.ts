@@ -1,11 +1,12 @@
 ﻿const BoxHorizontalSpace: number = 100;
 const BoxVerticalSpace: number = 100;
+const BoxWidth: number = 600;
 
 class Box {
     private _x: number= 0;
     private _y: number = 0;
     private _height: number = 250;
-    private _width: number = 550;
+    private _width: number = BoxWidth;
     
     private _style: string;
     _bgColor: string = "gray";

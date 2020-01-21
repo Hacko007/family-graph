@@ -23,6 +23,32 @@
     get fullName(): string {
         return this.firstName + " " + this.lastName;
     }
+
+    get marriedPartner(): Person {
+        if (this.relations.length === 0)
+            return null;
+        for (var rel of this.relations) {
+            if (rel.status === RelationStatus.Married) {
+                if (rel.dad === this)
+                    return rel.mam;
+                else
+                    return rel.dad;
+            }
+        }
+        return null;
+    }
+
+    get marriageChildren(): Person[] {
+        if (this.relations.length === 0)
+            return null;
+        for (var rel of this.relations) {
+            if (rel.status === RelationStatus.Married) {
+                return rel.children;
+            }
+        }
+        return null;
+    }
+    
 }
 
 enum Gender {

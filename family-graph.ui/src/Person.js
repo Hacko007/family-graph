@@ -17,6 +17,39 @@ var Person = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Person.prototype, "marriedPartner", {
+        get: function () {
+            if (this.relations.length === 0)
+                return null;
+            for (var _i = 0, _a = this.relations; _i < _a.length; _i++) {
+                var rel = _a[_i];
+                if (rel.status === RelationStatus.Married) {
+                    if (rel.dad === this)
+                        return rel.mam;
+                    else
+                        return rel.dad;
+                }
+            }
+            return null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Person.prototype, "marriageChildren", {
+        get: function () {
+            if (this.relations.length === 0)
+                return null;
+            for (var _i = 0, _a = this.relations; _i < _a.length; _i++) {
+                var rel = _a[_i];
+                if (rel.status === RelationStatus.Married) {
+                    return rel.children;
+                }
+            }
+            return null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Person;
 }());
 var Gender;

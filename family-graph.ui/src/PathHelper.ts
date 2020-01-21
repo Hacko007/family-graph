@@ -2,7 +2,7 @@
 
     // Connect two boxes with line
     static drawLine(box1: Box, box2: Box): SVGElement {
-
+        if (!box1 || !box2) return null;
         let dx1 = box1.x + (box1.width / 2);
         let dy1 = box1.y + (box1.height / 2);
 

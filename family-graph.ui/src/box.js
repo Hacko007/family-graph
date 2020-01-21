@@ -1,11 +1,12 @@
 var BoxHorizontalSpace = 100;
 var BoxVerticalSpace = 100;
+var BoxWidth = 600;
 var Box = /** @class */ (function () {
     function Box() {
         this._x = 0;
         this._y = 0;
         this._height = 250;
-        this._width = 550;
+        this._width = BoxWidth;
         this._bgColor = "gray";
         this._boxClass = "unknown-box";
     }

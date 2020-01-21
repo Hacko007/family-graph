@@ -16,59 +16,30 @@
 
             var p1 = new Person(1, "Adam","A",Gender.Male, null, new Date(1,1,1,1,1,1,1 ), null);
             var p2 = new Person(2, "Eve","E",Gender.Female, null, new Date(2,1,1,1,1,1,1 ), null);
-            var r = new Relation(p1, p2, null);
+            var r1 = new Relation(p1, p2, null);
 
-            var c1 = new Person(3, "Rambo","I",Gender.Male, null, new Date(1980,1,1,1,1,1,1 ), null);
-            var c2 = new Person(4, "Rambo","II",Gender.Male, null, new Date(1990,1,1,1,1,1,1 ), null);
-            var c3 = new Person(5, "Rambo","III",Gender.Male, null, new Date(1995,1,1,1,1,1,1 ), null);
-            r.addChildren({ c1, c2, c3 });
+            var p3 = new Person(3, "Rambo","I",Gender.Male, null, new Date(1980,1,1,1,1,1,1 ), null);
+            var p4 = new Person(4, "Rambo","II",Gender.Male, null, new Date(1990,1,1,1,1,1,1 ), null);
+            var p5 = new Person(5, "Rambo", "III", Gender.Male, null, new Date(1995, 1, 1, 1, 1, 1, 1), null);
+            var p6 = new Person(6, "Rambo", "IV", Gender.Male, null, new Date(1997, 1, 1, 1, 1, 1, 1), null);
+            var p7 = new Person(7, "Rambo","V",Gender.Male, null, new Date(2000,1,1,1,1,1,1 ), null);
+            r1.addChildren({ p3, p4, p5, p6, p7 });
 
 
 
             let box = new PersonBox(p1);
-            box.x =  0 ;
-            box.y =  10 ;
+            box.x =  600 ;
+            box.y =  300 ;
 
-            let box1 = new PersonBox(p2);
-            box1.x =  0 ;
-            box1.y =  10 ;
-        
-            let box2 =new PersonBox(c1);
-            box2.x = 0 ;
-            box2.y = 1210;
+            var v = box.createBaseTree();
+            v.forEach(e=>main.appendChild(e));
 
-            let box3 =new PersonBox(c2);
-            box3.x = 210 ;
-            box3.y = 1210;
-
-            let box4 = new PersonBox(c3);
-            box4.x = 1500 ;
-            box4.y = 1210;
-
-            Box.makeSpaceHorizontally({box, box1,box2,box3});
-            var l = box1.connectTo({box, box3,box4});
-            l.forEach(line => main.appendChild(line));
-
-
-            var c = PathHelper.getCenter(box, box1);
-            main.appendChild(box2.connectToPoint(c));
-
-
-            add(main, box);
-            add(main, box1);
-            add(main, box2);
-            add(main, box3);
-            add(main, box4);
-
-
-           
-
+            //main.transform()
+            
+            
         }
 
-        function add(svg, box) {
-            var v = box.create();
-            v.forEach(e=>svg.appendChild(e));
-        }
+      
 
     </script>
 
