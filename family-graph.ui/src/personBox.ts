@@ -51,15 +51,15 @@
                 y: this.y,
                 width: this.width,
                 height: this.height,
-                rx: 30,
-                ry: 10,
+                rx: 7,
+                ry: 5,
                 class: this._boxClass
         });
 
         var text = PathHelper.getNode('text',
             {
-                x: this.x + 20,
-                y: this.y + 80,
+                x: this.x + 10,
+                y: this.y + 40,
                 class: 'persons-name'
             });
         text.textContent = this.name;

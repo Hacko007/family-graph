@@ -1,11 +1,11 @@
-var BoxHorizontalSpace = 100;
-var BoxVerticalSpace = 100;
-var BoxWidth = 600;
+var BoxHorizontalSpace = 50;
+var BoxVerticalSpace = 60;
+var BoxWidth = 250;
 var Box = /** @class */ (function () {
     function Box() {
         this._x = 0;
         this._y = 0;
-        this._height = 250;
+        this._height = 100;
         this._width = BoxWidth;
         this._bgColor = "gray";
         this._boxClass = "unknown-box";
@@ -80,11 +80,11 @@ var Box = /** @class */ (function () {
             y: this.y,
             width: this.width,
             height: this.height,
-            rx: 30,
-            ry: 10,
+            rx: 7,
+            ry: 5,
             fill: this._bgColor,
             stroke: 'black',
-            strokeWidth: 7
+            strokeWidth: 2
         });
         return [rect];
     };
@@ -111,8 +111,6 @@ var Box = /** @class */ (function () {
         }
     };
     Box.prototype.overlapping = function (b2) {
-        //console.log(this.x +" <= "+ b2.x +" && "+ b2.x +" <= " +(this.x + this.width + BoxHorizontalSpace) + " && "
-        //    + this.y +" <= "+  b2.y +" && "+ b2.y +" <= "+ (this.y + this.height + BoxVerticalSpace));
         return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) &&
             (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace));
     };

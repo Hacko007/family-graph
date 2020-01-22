@@ -1,11 +1,11 @@
-﻿const BoxHorizontalSpace: number = 100;
-const BoxVerticalSpace: number = 100;
-const BoxWidth: number = 600;
+﻿const BoxHorizontalSpace: number = 50;
+const BoxVerticalSpace: number = 60;
+const BoxWidth: number = 250;
 
 class Box {
     private _x: number= 0;
     private _y: number = 0;
-    private _height: number = 250;
+    private _height: number = 100;
     private _width: number = BoxWidth;
     
     private _style: string;
@@ -75,11 +75,11 @@ class Box {
                 y: this.y,
                 width: this.width,
                 height: this.height,
-                rx: 30,
-                ry: 10,
+                rx: 7,
+                ry: 5,
                 fill: this._bgColor,
                 stroke: 'black',
-                strokeWidth: 7
+                strokeWidth: 2
             });
         return  [rect];
     }
@@ -110,9 +110,6 @@ class Box {
     }
 
     overlapping(b2: Box) {
-        //console.log(this.x +" <= "+ b2.x +" && "+ b2.x +" <= " +(this.x + this.width + BoxHorizontalSpace) + " && "
-        //    + this.y +" <= "+  b2.y +" && "+ b2.y +" <= "+ (this.y + this.height + BoxVerticalSpace));
-
         return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) && 
             (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace)) 
             ;

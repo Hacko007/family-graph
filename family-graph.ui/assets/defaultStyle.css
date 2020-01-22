@@ -1,8 +1,7 @@
-﻿body {
-}
+﻿
 
 .persons-name {
-    font-size: 70px;
+    font-size: 20px;
     color: black;
 }
 
@@ -16,17 +15,17 @@
 .male-box {
     fill: aquamarine;
     stroke: cornflowerblue;
-    stroke-width: 20px;
+    stroke-width: 2px;
 }
 
 .female-box {
     fill: coral;
     stroke: crimson;
-    stroke-width: 20px;
+    stroke-width: 2px;
 }
 
 .path {
     fill: none;
     stroke: darkgreen;
-    stroke-width: 10px;
+    stroke-width: 4px;
 }

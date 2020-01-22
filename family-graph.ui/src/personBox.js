@@ -72,13 +72,13 @@ var PersonBox = /** @class */ (function (_super) {
             y: this.y,
             width: this.width,
             height: this.height,
-            rx: 30,
-            ry: 10,
+            rx: 7,
+            ry: 5,
             class: this._boxClass
         });
         var text = PathHelper.getNode('text', {
-            x: this.x + 20,
-            y: this.y + 80,
+            x: this.x + 10,
+            y: this.y + 40,
             class: 'persons-name'
         });
         text.textContent = this.name;
@@ -115,8 +115,8 @@ var PersonBox = /** @class */ (function (_super) {
             this.updateLeft(x);
         }
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
-        console.log("famLeft:" + this.familyLeft);
-        console.log("famWidth:" + this.familyWidth);
+        console.log("fam Left:" + this.familyLeft);
+        console.log("fam Width:" + this.familyWidth);
     };
     PersonBox.prototype.createBaseTree = function () {
         var _this = this;
