@@ -19,6 +19,7 @@ var PersonBox = /** @class */ (function (_super) {
         _this._familyLeft = 0;
         _this._classFemale = "female-box";
         _this._classMale = "male-box";
+        _this._lines = new Array();
         _this.person = person;
         _this.isMale = person.gender === Gender.Male;
         if (_this.isMale) {
@@ -66,6 +67,67 @@ var PersonBox = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    PersonBox.prototype.createBaseTree = function () {
+        var _this = this;
+        this._familyLeft = this.x;
+        var boxes = this.expandeBaseTree();
+        if (!boxes)
+            return null;
+        var elements = new Array();
+        // Connection
+        for (var _i = 0, boxes_1 = boxes; _i < boxes_1.length; _i++) {
+            var pbox = boxes_1[_i];
+            for (var _a = 0, _b = pbox._lines; _a < _b.length; _a++) {
+                var line = _b[_a];
+                if (line.lineType === LineType.Child) {
+                    this.add(elements, PathHelper.drawLineFrom(line.pointFrom, line.personTo));
+                }
+                else {
+                    this.add(elements, PathHelper.drawLine(line.personFrom, line.personTo));
+                }
+            }
+        }
+        // Boxes
+        for (var _c = 0, boxes_2 = boxes; _c < boxes_2.length; _c++) {
+            var pbox = boxes_2[_c];
+            pbox.create().forEach(function (p) { return _this.add(elements, p); });
+        }
+        return elements;
+    };
+    PersonBox.prototype.expandeBaseTree = function () {
+        var lineToChild = function (from, child) {
+            var l = new Line();
+            l.pointFrom = from;
+            l.personTo = child;
+            l.lineType = LineType.Child;
+            return l;
+        };
+        var lineToPartner = function (from, to, lineType) {
+            var l = new Line();
+            l.personFrom = from;
+            l.personTo = to;
+            l.lineType = LineType.Partners;
+            return l;
+        };
+        var result = new Array();
+        result.push(this);
+        this._familyLeft = this.x;
+        var partnerBox = this.expandPartner();
+        if (partnerBox) {
+            this._lines.push(lineToPartner(this, partnerBox, LineType.Partners));
+            result.push(partnerBox);
+        }
+        var childrenBoxes = this.expandChildren();
+        if (childrenBoxes) {
+            var from = PathHelper.getCenter(this, partnerBox);
+            for (var _i = 0, childrenBoxes_1 = childrenBoxes; _i < childrenBoxes_1.length; _i++) {
+                var child = childrenBoxes_1[_i];
+                this._lines.push(lineToChild(from, child));
+                child.expandeBaseTree().forEach(function (ch) { return result.push(ch); });
+            }
+        }
+        return result;
+    };
     PersonBox.prototype.create = function () {
         var rect = PathHelper.getNode('rect', {
             x: this.x,
@@ -100,16 +162,17 @@ var PersonBox = /** @class */ (function (_super) {
     PersonBox.prototype.positionChildren = function (children) {
         var space = BoxHorizontalSpace * 2;
         if (!children)
-            return;
+            return null;
         var childrenWidth = 0;
         var c = Math.max(1, children.length - 1);
         var x = this.x - ((c * (this.width + space)) / 2);
         var y = this.y + this.height + space;
+        var result = new Array();
         for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
             var child = children_1[_i];
-            child.createBaseTree();
             child.x = x;
             child.y = y;
+            //child.expandeBaseTree();
             x += child.familyWidth + space;
             childrenWidth += child.familyWidth + space;
             this.updateLeft(x);
@@ -117,31 +180,7 @@ var PersonBox = /** @class */ (function (_super) {
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
         console.log("fam Left:" + this.familyLeft);
         console.log("fam Width:" + this.familyWidth);
-    };
-    PersonBox.prototype.createBaseTree = function () {
-        var _this = this;
-        this._familyLeft = this.x;
-        var partnerBox = this.expandPartner();
-        var childrenBoxes = this.expandChildren();
-        var elements = new Array();
-        // Connection
-        this.add(elements, PathHelper.drawLine(this, partnerBox));
-        var connect = PathHelper.getCenter(this, partnerBox);
-        if (childrenBoxes)
-            for (var _i = 0, childrenBoxes_1 = childrenBoxes; _i < childrenBoxes_1.length; _i++) {
-                var chBox = childrenBoxes_1[_i];
-                this.add(elements, PathHelper.drawLineFrom(connect, chBox));
-            }
-        // Boxes
-        this.create().forEach(function (e) { return _this.add(elements, e); });
-        if (partnerBox)
-            partnerBox.create().forEach(function (p) { return _this.add(elements, p); });
-        if (childrenBoxes)
-            for (var _a = 0, childrenBoxes_2 = childrenBoxes; _a < childrenBoxes_2.length; _a++) {
-                var ch = childrenBoxes_2[_a];
-                ch.create().forEach(function (e) { return _this.add(elements, e); });
-            }
-        return elements;
+        return result;
     };
     // Create position for partner and children
     PersonBox.prototype.expandPartner = function () {
@@ -166,8 +205,8 @@ var PersonBox = /** @class */ (function (_super) {
             var child = children_2[_i];
             chBoxs.push(new PersonBox(child));
         }
-        this.positionChildren(chBoxs);
-        return chBoxs;
+        return this.positionChildren(chBoxs);
+        //return chBoxs;
     };
     PersonBox.prototype.add = function (list, item) {
         if (!item)
@@ -176,4 +215,15 @@ var PersonBox = /** @class */ (function (_super) {
     };
     return PersonBox;
 }(Box));
+var Line = /** @class */ (function () {
+    function Line() {
+    }
+    return Line;
+}());
+var LineType;
+(function (LineType) {
+    LineType[LineType["Partners"] = 0] = "Partners";
+    LineType[LineType["Parents"] = 1] = "Parents";
+    LineType[LineType["Child"] = 2] = "Child";
+})(LineType || (LineType = {}));
 //# sourceMappingURL=personBox.js.map

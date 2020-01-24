@@ -47,7 +47,10 @@
         var p7 = new Person(7, "Rambo", "V", Gender.Male, null, new Date(2000, 1, 1, 1, 1, 1, 1), null);
         r1.addChildren({ p3, p4, p5, p6, p7 });
 
-
+        var p8 = new Person(8, "Ana", "IV", Gender.Female, null, new Date(1997, 1, 1, 1, 1, 1, 1), null);        
+        var r2 = new Relation(p6, p8, null);
+        var p9 = new Person(9, "Rocky", "I", Gender.Male, null, new Date(2015, 1, 1, 1, 1, 1, 1), null);
+        r2.addChildren({ p9 });
 
         let box = new PersonBox(p1);
         box.x = 600;
