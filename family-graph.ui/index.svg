@@ -11,13 +11,11 @@
      viewbox='0 0 1000 1000'
      onload="init(evt)">
 
-
     <script href="src/PathHelper.js"></script>
     <script href="src/box.js"></script>
     <script href="src/Relation.js"></script>
     <script href="src/Person.js"></script>
     <script href="src/personBox.js"></script>
-
     <script type="text/ecmascript">
         <![CDATA[
         var dx = 0;
@@ -50,7 +48,8 @@
         var p8 = new Person(8, "Ana", "IV", Gender.Female, null, new Date(1997, 1, 1, 1, 1, 1, 1), null);        
         var r2 = new Relation(p6, p8, null);
         var p9 = new Person(9, "Rocky", "I", Gender.Male, null, new Date(2015, 1, 1, 1, 1, 1, 1), null);
-        r2.addChildren({ p9 });
+        var p10 = new Person(10, "Rocky", "II", Gender.Male, null, new Date(2016, 1, 1, 1, 1, 1, 1), null);
+        r2.addChildren({ p9 ,p10});
 
         let box = new PersonBox(p1);
         box.x = 600;

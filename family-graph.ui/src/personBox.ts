@@ -1,5 +1,5 @@
 ﻿class PersonBox extends Box {
-    person:Person;
+    person: Person;
 
     private _baseFamilyWidth: number = BoxWidth;
     private _familyLeft: number = 0;
@@ -8,7 +8,7 @@
     private _classMale: string = "male-box";
     _lines = new Array<Line>();
 
-    constructor(person:Person) {
+    constructor(person: Person) {
         super();
         this.person = person;
         this.isMale = person.gender === Gender.Male;
@@ -22,10 +22,11 @@
     get name(): string {
         return this.person.fullName;
     }
-    
+
     get isMale(): boolean {
         return this._isMale;
     }
+
     set isMale(value: boolean) {
         this._isMale = value;
     }
@@ -33,12 +34,15 @@
     get familyLeft(): number {
         return this._familyLeft;
     }
-    updateLeft(x:number) {
+
+    updateLeft(x: number) {
         this._familyLeft = Math.min(this._familyLeft, x);
     }
+
     get familyWidth(): number {
         return this._baseFamilyWidth;
     }
+
     set familyWidth(value: number) {
         this._baseFamilyWidth = value;
     }
@@ -46,13 +50,14 @@
     createBaseTree(): SVGElement[] {
         this._familyLeft = this.x;
 
-        var boxes = this.expandeBaseTree();
+        var boxes = this.expandBaseTree();
         if (!boxes) return null;
         var elements = new Array<SVGElement>();
 
         // Connection
         for (var pbox of boxes) {
             for (var line of pbox._lines) {
+                if (!line) continue;
                 if (line.lineType === LineType.Child) {
                     this.add(elements, PathHelper.drawLineFrom(line.pointFrom, line.personTo));
                 } else {
@@ -62,49 +67,49 @@
         }
         // Boxes
         for (var pbox of boxes) {
-            pbox.create().forEach(p=>this.add(elements,p));
+            pbox.create().forEach(p => this.add(elements, p));
         }
         return elements;
     }
 
-    expandeBaseTree(): PersonBox[] {
+    expandBaseTree(): PersonBox[] {
 
-        var lineToChild = (from: DOMPoint, child: PersonBox): Line => {
-            var l = new Line();
-            l.pointFrom = from;
-            l.personTo = child;
-            l.lineType = LineType.Child;
-            return l;
-        };
-        var lineToPartner = (from: PersonBox, to: PersonBox, lineType: LineType): Line =>{
-            var l = new Line();
-            l.personFrom = from;
-            l.personTo = to;
-            l.lineType = LineType.Partners;
-            return l;
-        };
         var result = new Array<PersonBox>();
         result.push(this);
         this._familyLeft = this.x;
 
         var partnerBox = this.expandPartner();
         if (partnerBox) {
-            this._lines.push(lineToPartner(this, partnerBox, LineType.Partners));
+            this._lines.push(Line.lineTo(this, partnerBox, LineType.Partners));
             result.push(partnerBox);
         }
 
         var childrenBoxes = this.expandChildren();
         if (childrenBoxes) {
-            var from = PathHelper.getCenter(this, partnerBox);
             for (var child of childrenBoxes) {
-                this._lines.push(lineToChild(from, child));
-                child.expandeBaseTree().forEach(ch => result.push(ch));
+                this._lines.push(child.lineToParents(childrenBoxes.concat([this, partnerBox])));
+                result.push(child);
             }
         }
         return result;
-    } 
+    }
 
-   
+    lineToParents(boxes: Array<PersonBox>): Line {
+        if (!this.person || (!this.person.parents)) return null;
+        var find = (p: Person, boxes: PersonBox[]) => {
+            for (var box of boxes) {
+                if (box.person && box.person === p) {
+                    return box;
+                }
+            }
+            return null;
+        }
+        var dadBox = find(this.person.parents.dad, boxes);
+        var mamBox = find(this.person.parents.mam, boxes);
+        var from = PathHelper.getCenter(dadBox, mamBox);
+        return Line.lineToChild(from, this);
+    }
+
 
     create(): SVGElement[] {
         var rect: SVGElement = PathHelper.getNode('rect',
@@ -116,7 +121,7 @@
                 rx: 7,
                 ry: 5,
                 class: this._boxClass
-        });
+            });
 
         var text = PathHelper.getNode('text',
             {
@@ -125,7 +130,7 @@
                 class: 'persons-name'
             });
         text.textContent = this.name;
-        return [ rect, text ];
+        return [rect, text];
     }
 
     positionPartner(partner: PersonBox) {
@@ -153,11 +158,11 @@
         for (var child of children) {
             child.x = x;
             child.y = y;
-            //TODO: fix children with partners
-            //child.expandeBaseTree();
+            var childsFamily = child.expandBaseTree();
             x += child.familyWidth + space;
             childrenWidth += child.familyWidth + space;
             this.updateLeft(x);
+            childsFamily.forEach(f => result.push(f));
         }
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
         console.log("fam Left:" + this.familyLeft);
@@ -166,10 +171,8 @@
     }
 
 
-    
-
     // Create position for partner and children
-    expandPartner():PersonBox{
+    expandPartner(): PersonBox {
         if (!this.person) return null;
         var partner = this.person.marriedPartner;
         if (!partner) return null;
@@ -180,7 +183,7 @@
 
     // Create position for partner and children
     expandChildren(): PersonBox[] {
-        if (!this.person ) return null;
+        if (!this.person) return null;
         var children = this.person.marriageChildren;
         if (!children) return null;
         var chBoxs = new Array<PersonBox>();
@@ -188,7 +191,6 @@
             chBoxs.push(new PersonBox(child));
         }
         return this.positionChildren(chBoxs);
-        //return chBoxs;
     }
 
     add(list: Array<SVGElement>, item: any) {
@@ -202,6 +204,22 @@ class Line {
     personFrom: PersonBox;
     personTo: PersonBox;
     pointFrom: DOMPoint;
+
+    static lineToChild(from: DOMPoint, child: PersonBox): Line {
+        var l = new Line();
+        l.pointFrom = from;
+        l.personTo = child;
+        l.lineType = LineType.Child;
+        return l;
+    };
+
+    static lineTo(from: PersonBox, to: PersonBox, lineType: LineType): Line {
+        var l = new Line();
+        l.personFrom = from;
+        l.personTo = to;
+        l.lineType = lineType;
+        return l;
+    };
 }
 
 enum LineType {

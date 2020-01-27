@@ -70,7 +70,7 @@ var PersonBox = /** @class */ (function (_super) {
     PersonBox.prototype.createBaseTree = function () {
         var _this = this;
         this._familyLeft = this.x;
-        var boxes = this.expandeBaseTree();
+        var boxes = this.expandBaseTree();
         if (!boxes)
             return null;
         var elements = new Array();
@@ -79,6 +79,8 @@ var PersonBox = /** @class */ (function (_super) {
             var pbox = boxes_1[_i];
             for (var _a = 0, _b = pbox._lines; _a < _b.length; _a++) {
                 var line = _b[_a];
+                if (!line)
+                    continue;
                 if (line.lineType === LineType.Child) {
                     this.add(elements, PathHelper.drawLineFrom(line.pointFrom, line.personTo));
                 }
@@ -94,39 +96,41 @@ var PersonBox = /** @class */ (function (_super) {
         }
         return elements;
     };
-    PersonBox.prototype.expandeBaseTree = function () {
-        var lineToChild = function (from, child) {
-            var l = new Line();
-            l.pointFrom = from;
-            l.personTo = child;
-            l.lineType = LineType.Child;
-            return l;
-        };
-        var lineToPartner = function (from, to, lineType) {
-            var l = new Line();
-            l.personFrom = from;
-            l.personTo = to;
-            l.lineType = LineType.Partners;
-            return l;
-        };
+    PersonBox.prototype.expandBaseTree = function () {
         var result = new Array();
         result.push(this);
         this._familyLeft = this.x;
         var partnerBox = this.expandPartner();
         if (partnerBox) {
-            this._lines.push(lineToPartner(this, partnerBox, LineType.Partners));
+            this._lines.push(Line.lineTo(this, partnerBox, LineType.Partners));
             result.push(partnerBox);
         }
         var childrenBoxes = this.expandChildren();
         if (childrenBoxes) {
-            var from = PathHelper.getCenter(this, partnerBox);
             for (var _i = 0, childrenBoxes_1 = childrenBoxes; _i < childrenBoxes_1.length; _i++) {
                 var child = childrenBoxes_1[_i];
-                this._lines.push(lineToChild(from, child));
-                child.expandeBaseTree().forEach(function (ch) { return result.push(ch); });
+                this._lines.push(child.lineToParents(childrenBoxes.concat([this, partnerBox])));
+                result.push(child);
             }
         }
         return result;
+    };
+    PersonBox.prototype.lineToParents = function (boxes) {
+        if (!this.person || (!this.person.parents))
+            return null;
+        var find = function (p, boxes) {
+            for (var _i = 0, boxes_3 = boxes; _i < boxes_3.length; _i++) {
+                var box = boxes_3[_i];
+                if (box.person && box.person === p) {
+                    return box;
+                }
+            }
+            return null;
+        };
+        var dadBox = find(this.person.parents.dad, boxes);
+        var mamBox = find(this.person.parents.mam, boxes);
+        var from = PathHelper.getCenter(dadBox, mamBox);
+        return Line.lineToChild(from, this);
     };
     PersonBox.prototype.create = function () {
         var rect = PathHelper.getNode('rect', {
@@ -172,10 +176,11 @@ var PersonBox = /** @class */ (function (_super) {
             var child = children_1[_i];
             child.x = x;
             child.y = y;
-            //child.expandeBaseTree();
+            var childsFamily = child.expandBaseTree();
             x += child.familyWidth + space;
             childrenWidth += child.familyWidth + space;
             this.updateLeft(x);
+            childsFamily.forEach(function (f) { return result.push(f); });
         }
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
         console.log("fam Left:" + this.familyLeft);
@@ -206,7 +211,6 @@ var PersonBox = /** @class */ (function (_super) {
             chBoxs.push(new PersonBox(child));
         }
         return this.positionChildren(chBoxs);
-        //return chBoxs;
     };
     PersonBox.prototype.add = function (list, item) {
         if (!item)
@@ -218,6 +222,22 @@ var PersonBox = /** @class */ (function (_super) {
 var Line = /** @class */ (function () {
     function Line() {
     }
+    Line.lineToChild = function (from, child) {
+        var l = new Line();
+        l.pointFrom = from;
+        l.personTo = child;
+        l.lineType = LineType.Child;
+        return l;
+    };
+    ;
+    Line.lineTo = function (from, to, lineType) {
+        var l = new Line();
+        l.personFrom = from;
+        l.personTo = to;
+        l.lineType = lineType;
+        return l;
+    };
+    ;
     return Line;
 }());
 var LineType;
