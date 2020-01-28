@@ -29,6 +29,8 @@
     // draw line from point to box
     static drawLineFrom(point : DOMPoint , toBox: Box): SVGElement {
 
+        if (!point || !toBox) return null;
+
         let dx2 = toBox.x + (toBox.width / 2);
         let dy2 = toBox.y + (toBox.height / 2);
 
@@ -49,6 +51,7 @@
 
     // Get center between two boxes, ie parents
     static getCenter(box1?: Box, box2?: Box): DOMPoint {
+        if (!box1 && !box2) return null;
         let x = 0;
         let y = 0;
         let dx1 = 0;

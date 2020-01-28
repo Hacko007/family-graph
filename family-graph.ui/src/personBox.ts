@@ -47,27 +47,50 @@
         this._baseFamilyWidth = value;
     }
 
+    create(): SVGElement[] {
+        var rect: SVGElement = PathHelper.getNode('rect',
+            {
+                x: this.x,
+                y: this.y,
+                width: this.width,
+                height: this.height,
+                rx: 7,
+                ry: 5,
+                class: this._boxClass
+            });
+
+        var text = PathHelper.getNode('text',
+            {
+                x: this.x + 10,
+                y: this.y + 40,
+                class: 'persons-name'
+            });
+        text.textContent = this.name;
+        return [rect, text];
+    }
+
     createBaseTree(): SVGElement[] {
         this._familyLeft = this.x;
 
         var boxes = this.expandBaseTree();
         if (!boxes) return null;
         var elements = new Array<SVGElement>();
+        var add = (item: any) => { if (item) elements.push(item); };
 
         // Connection
         for (var pbox of boxes) {
             for (var line of pbox._lines) {
                 if (!line) continue;
                 if (line.lineType === LineType.Child) {
-                    this.add(elements, PathHelper.drawLineFrom(line.pointFrom, line.personTo));
+                    add(PathHelper.drawLineFrom(line.pointFrom, line.personTo));
                 } else {
-                    this.add(elements, PathHelper.drawLine(line.personFrom, line.personTo));
+                    add(PathHelper.drawLine(line.personFrom, line.personTo));
                 }
             }
         }
         // Boxes
         for (var pbox of boxes) {
-            pbox.create().forEach(p => this.add(elements, p));
+            pbox.create().forEach(p => add(p));
         }
         return elements;
     }
@@ -94,6 +117,7 @@
         return result;
     }
 
+    // connect this person to parents from boxes
     lineToParents(boxes: Array<PersonBox>): Line {
         if (!this.person || (!this.person.parents)) return null;
         var find = (p: Person, boxes: PersonBox[]) => {
@@ -110,29 +134,7 @@
         return Line.lineToChild(from, this);
     }
 
-
-    create(): SVGElement[] {
-        var rect: SVGElement = PathHelper.getNode('rect',
-            {
-                x: this.x,
-                y: this.y,
-                width: this.width,
-                height: this.height,
-                rx: 7,
-                ry: 5,
-                class: this._boxClass
-            });
-
-        var text = PathHelper.getNode('text',
-            {
-                x: this.x + 10,
-                y: this.y + 40,
-                class: 'persons-name'
-            });
-        text.textContent = this.name;
-        return [rect, text];
-    }
-
+    // Set position for partner
     positionPartner(partner: PersonBox) {
         if (!partner) return;
 
@@ -146,6 +148,7 @@
         this.familyWidth = 2 * this.width + space;
     }
 
+    // Set position to all children and there families
     positionChildren(children: PersonBox[]): PersonBox[] {
         var space = BoxHorizontalSpace * 2;
         if (!children) return null;
@@ -171,7 +174,7 @@
     }
 
 
-    // Create position for partner and children
+    // Make space for partner
     expandPartner(): PersonBox {
         if (!this.person) return null;
         var partner = this.person.marriedPartner;
@@ -181,7 +184,7 @@
         return partnerBox;
     }
 
-    // Create position for partner and children
+    // Make space for children
     expandChildren(): PersonBox[] {
         if (!this.person) return null;
         var children = this.person.marriageChildren;
@@ -193,10 +196,7 @@
         return this.positionChildren(chBoxs);
     }
 
-    add(list: Array<SVGElement>, item: any) {
-        if (!item) return;
-        list.push(item);
-    }
+   
 }
 
 class Line {

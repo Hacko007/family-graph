@@ -24,6 +24,8 @@ var PathHelper = /** @class */ (function () {
     ;
     // draw line from point to box
     PathHelper.drawLineFrom = function (point, toBox) {
+        if (!point || !toBox)
+            return null;
         var dx2 = toBox.x + (toBox.width / 2);
         var dy2 = toBox.y + (toBox.height / 2);
         var dy = ((point.y + dy2) / 2);
@@ -41,6 +43,8 @@ var PathHelper = /** @class */ (function () {
     ;
     // Get center between two boxes, ie parents
     PathHelper.getCenter = function (box1, box2) {
+        if (!box1 && !box2)
+            return null;
         var x = 0;
         var y = 0;
         var dx1 = 0;

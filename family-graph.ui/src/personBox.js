@@ -67,13 +67,32 @@ var PersonBox = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    PersonBox.prototype.create = function () {
+        var rect = PathHelper.getNode('rect', {
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height,
+            rx: 7,
+            ry: 5,
+            class: this._boxClass
+        });
+        var text = PathHelper.getNode('text', {
+            x: this.x + 10,
+            y: this.y + 40,
+            class: 'persons-name'
+        });
+        text.textContent = this.name;
+        return [rect, text];
+    };
     PersonBox.prototype.createBaseTree = function () {
-        var _this = this;
         this._familyLeft = this.x;
         var boxes = this.expandBaseTree();
         if (!boxes)
             return null;
         var elements = new Array();
+        var add = function (item) { if (item)
+            elements.push(item); };
         // Connection
         for (var _i = 0, boxes_1 = boxes; _i < boxes_1.length; _i++) {
             var pbox = boxes_1[_i];
@@ -82,17 +101,17 @@ var PersonBox = /** @class */ (function (_super) {
                 if (!line)
                     continue;
                 if (line.lineType === LineType.Child) {
-                    this.add(elements, PathHelper.drawLineFrom(line.pointFrom, line.personTo));
+                    add(PathHelper.drawLineFrom(line.pointFrom, line.personTo));
                 }
                 else {
-                    this.add(elements, PathHelper.drawLine(line.personFrom, line.personTo));
+                    add(PathHelper.drawLine(line.personFrom, line.personTo));
                 }
             }
         }
         // Boxes
         for (var _c = 0, boxes_2 = boxes; _c < boxes_2.length; _c++) {
             var pbox = boxes_2[_c];
-            pbox.create().forEach(function (p) { return _this.add(elements, p); });
+            pbox.create().forEach(function (p) { return add(p); });
         }
         return elements;
     };
@@ -115,6 +134,7 @@ var PersonBox = /** @class */ (function (_super) {
         }
         return result;
     };
+    // connect this person to parents from boxes
     PersonBox.prototype.lineToParents = function (boxes) {
         if (!this.person || (!this.person.parents))
             return null;
@@ -132,24 +152,7 @@ var PersonBox = /** @class */ (function (_super) {
         var from = PathHelper.getCenter(dadBox, mamBox);
         return Line.lineToChild(from, this);
     };
-    PersonBox.prototype.create = function () {
-        var rect = PathHelper.getNode('rect', {
-            x: this.x,
-            y: this.y,
-            width: this.width,
-            height: this.height,
-            rx: 7,
-            ry: 5,
-            class: this._boxClass
-        });
-        var text = PathHelper.getNode('text', {
-            x: this.x + 10,
-            y: this.y + 40,
-            class: 'persons-name'
-        });
-        text.textContent = this.name;
-        return [rect, text];
-    };
+    // Set position for partner
     PersonBox.prototype.positionPartner = function (partner) {
         if (!partner)
             return;
@@ -163,6 +166,7 @@ var PersonBox = /** @class */ (function (_super) {
         }
         this.familyWidth = 2 * this.width + space;
     };
+    // Set position to all children and there families
     PersonBox.prototype.positionChildren = function (children) {
         var space = BoxHorizontalSpace * 2;
         if (!children)
@@ -187,7 +191,7 @@ var PersonBox = /** @class */ (function (_super) {
         console.log("fam Width:" + this.familyWidth);
         return result;
     };
-    // Create position for partner and children
+    // Make space for partner
     PersonBox.prototype.expandPartner = function () {
         if (!this.person)
             return null;
@@ -198,7 +202,7 @@ var PersonBox = /** @class */ (function (_super) {
         this.positionPartner(partnerBox);
         return partnerBox;
     };
-    // Create position for partner and children
+    // Make space for children
     PersonBox.prototype.expandChildren = function () {
         if (!this.person)
             return null;
@@ -211,11 +215,6 @@ var PersonBox = /** @class */ (function (_super) {
             chBoxs.push(new PersonBox(child));
         }
         return this.positionChildren(chBoxs);
-    };
-    PersonBox.prototype.add = function (list, item) {
-        if (!item)
-            return;
-        list.push(item);
     };
     return PersonBox;
 }(Box));
