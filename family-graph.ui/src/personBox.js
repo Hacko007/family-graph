@@ -162,6 +162,7 @@ var PersonBox = /** @class */ (function (_super) {
             partner.x = this.x + this.width + space;
         }
         else {
+            partner.x = this.x;
             this.x = partner.x + partner.width + space;
         }
         this.familyWidth = 2 * this.width + space;
@@ -172,9 +173,11 @@ var PersonBox = /** @class */ (function (_super) {
         if (!children)
             return null;
         var childrenWidth = 0;
+        console.log(this.person.firstName + "\tx:" + this.x + "\ty:" + this.y);
         var c = Math.max(1, children.length - 1);
         var x = this.x - ((c * (this.width + space)) / 2);
         var y = this.y + this.height + space;
+        console.log(this.person.firstName + "\tc:" + c + "\tx:" + x + "\ty:" + y);
         var result = new Array();
         for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
             var child = children_1[_i];
@@ -183,12 +186,15 @@ var PersonBox = /** @class */ (function (_super) {
             var childsFamily = child.expandBaseTree();
             x += child.familyWidth + space;
             childrenWidth += child.familyWidth + space;
+            console.log("x:" + x);
             this.updateLeft(x);
             childsFamily.forEach(function (f) { return result.push(f); });
+            console.log("ch:" + child.person.firstName + "\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth);
+            //console.log("ch:" + child.person.firstName + "\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth );
         }
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
-        console.log("fam Left:" + this.familyLeft);
-        console.log("fam Width:" + this.familyWidth);
+        //console.log(this.person.firstName + "\tLeft - Width:\t" + this.familyLeft + " \t" + this.familyWidth);
+        console.log(this.person.firstName + "\tx,y,left,width:\t" + this.x + ",\t" + this.y + ",\t" + this.familyLeft + " \t" + this.familyWidth);
         return result;
     };
     // Make space for partner
