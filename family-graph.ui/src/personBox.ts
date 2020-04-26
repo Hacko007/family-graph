@@ -89,20 +89,20 @@ class PersonBox extends Box {
     startFromThisPersion(): SVGElement[] {
         var result = this.createBaseTree();
         var olds = this.drawParents();
-        olds.forEach(i => result.push(i));
+        olds.forEach(i => i.create().forEach(box=> result.push(box)));
         return result;
     }
 
-    drawParents(): SVGElement[] {
-        var result = new Array<SVGElement>();
+    drawParents(): PersonBox[] {
+        var result = new Array<PersonBox>();
         var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
         var createParent = (p: Person) => {
             if (!p) return null;
             var parent = new PersonBox(p);
             parent.x = this.x;
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
-            add(parent.create());
             add(parent.drawParents());
+            result.push(parent);
             return parent;
         }
         var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
