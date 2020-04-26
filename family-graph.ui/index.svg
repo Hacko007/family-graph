@@ -10,12 +10,13 @@
      style="background-color:antiquewhite"
      viewbox='0 0 1000 1000'
      onload="init(evt)">
-
+<script>var exports = {};</script>
     <script href="src/PathHelper.js"></script>
     <script href="src/box.js"></script>
     <script href="src/Relation.js"></script>
     <script href="src/Person.js"></script>
     <script href="src/personBox.js"></script>
+    <script href="src/EventDispatcher.js"></script>
     <script type="text/ecmascript">
         <![CDATA[
         var dx = 0;
@@ -750,15 +751,16 @@ var r596 = new Relation(p596, p72, null); r596.addChildren({ p597 });
 var r601 = new Relation(p601, p225, null); r601.addChildren({ p602 });
 var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
 
-         let box = new PersonBox(p20); // adzo
+        // let box = new PersonBox(p20); // adzo
         //let box = new PersonBox(p7); // cako
+        let box = new PersonBox(p24); // midzo nazim
         box.x = 600;
         box.y = 300;
-
-        var v = box.createBaseTree();
+        //box.onClick().register(i => {alert(i)});
+        var v = box.startFromThisPersion();
         v.forEach(e => mapMatrix.appendChild(e));
 
-        console.log(box.familyLeft);
+        //console.log(box.familyLeft);
 
         pan(box.familyLeft + 10, 0);
 
@@ -768,58 +770,58 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
 
 
         function pan(dx, dy) {
-        try {
-        transMatrix[4] += dx;
-        transMatrix[5] += dy;
+          try {
+            transMatrix[4] += dx;
+            transMatrix[5] += dy;
 
-        var newMatrix = "matrix(" + transMatrix.join(' ') + ")";
-        mapMatrix.setAttributeNS(null, "transform", newMatrix);
-        } catch (err) { }
+            var newMatrix = "matrix(" + transMatrix.join(' ') + ")";
+            mapMatrix.setAttributeNS(null, "transform", newMatrix);
+          } catch (err) { }
         }
 
         function zoom(scale) {
-        try {
-        for (var i = 0; i < transMatrix.length; i++) {
-        transMatrix[i] *= scale;
-        }
+          try {
+            for (var i = 0; i < transMatrix.length; i++) {
+              transMatrix[i] *= scale;
+            }
 
-        transMatrix[4] += (1 - scale) * width / 2;
-        transMatrix[5] += (1 - scale) * height / 2;
+            transMatrix[4] += (1 - scale) * width / 2;
+            transMatrix[5] += (1 - scale) * height / 2;
 
-        var newMatrix = "matrix(" + transMatrix.join(' ') + ")";
-        mapMatrix.setAttributeNS(null, "transform", newMatrix);
-        } catch (err) { }
+            var newMatrix = "matrix(" + transMatrix.join(' ') + ")";
+            mapMatrix.setAttributeNS(null, "transform", newMatrix);
+           } catch (err) { }
         }
 
 
         function mousedown_listener(evt)
         {
-        dx = evt.clientX;
-        dy = evt.clientY;
-        window.addEventListener("mousemove", mousemove_listener, true);
-        window.addEventListener("mouseup", mouseup_listener, true);
+          dx = evt.clientX;
+          dy = evt.clientY;
+          window.addEventListener("mousemove", mousemove_listener, true);
+          window.addEventListener("mouseup", mouseup_listener, true);
         }
 
         function mouseup_listener(evt)
         {
-        window.removeEventListener("mousemove", mousemove_listener, true);
-        window.removeEventListener("mouseup", mouseup_listener, true);
+          window.removeEventListener("mousemove", mousemove_listener, true);
+          window.removeEventListener("mouseup", mouseup_listener, true);
         }
 
         function mousemove_listener(evt)
         {
-        pan(evt.clientX - dx, evt.clientY - dy)
-        dx = evt.clientX;
-        dy = evt.clientY;
+          pan(evt.clientX - dx, evt.clientY - dy)
+          dx = evt.clientX;
+          dy = evt.clientY;
         }
 
         function mouseWheel_listener(evt) {
-        //var delta = evt.wheelDelta / 1800;
+          //var delta = evt.wheelDelta / 1800;
 
-        var delta = Math.max(-1, Math.min(1, (evt.wheelDelta / 1800 || -(evt.detail/1800))));
-        var z = 1 + delta;
-        console.log("wheel:" + z + " - delta:"+ evt.wheelDelta  + " - detail:" + evt.detail);
-        zoom(z);
+          var delta = Math.max(-1, Math.min(1, (evt.wheelDelta / 1800 || -(evt.detail/1800))));
+          var z = 1 + delta;
+          //console.log("wheel:" + z + " - delta:"+ evt.wheelDelta  + " - detail:" + evt.detail);
+          zoom(z);
         }
 
         ]]>

@@ -1,8 +1,8 @@
-var BoxHorizontalSpace = 50;
-var BoxVerticalSpace = 60;
-var BoxWidth = 250;
-var Box = /** @class */ (function () {
-    function Box() {
+const BoxHorizontalSpace = 50;
+const BoxVerticalSpace = 60;
+const BoxWidth = 250;
+class Box {
+    constructor() {
         this._x = 0;
         this._y = 0;
         this._height = 100;
@@ -10,71 +10,51 @@ var Box = /** @class */ (function () {
         this._bgColor = "gray";
         this._boxClass = "unknown-box";
     }
-    Object.defineProperty(Box.prototype, "x", {
-        get: function () {
-            return this._x;
-        },
-        set: function (value) {
-            this._x = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Box.prototype, "y", {
-        get: function () {
-            return this._y;
-        },
-        set: function (value) {
-            this._y = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Box.prototype, "height", {
-        get: function () {
-            return this._height;
-        },
-        set: function (value) {
-            this._height = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Box.prototype, "width", {
-        get: function () {
-            return this._width;
-        },
-        set: function (value) {
-            this._width = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Box.prototype, "style", {
-        get: function () {
-            return this._style;
-        },
-        set: function (value) {
-            this._style = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Box.prototype.connectTo = function (boxes) {
+    get x() {
+        return this._x;
+    }
+    set x(value) {
+        this._x = value;
+    }
+    get y() {
+        return this._y;
+    }
+    set y(value) {
+        this._y = value;
+    }
+    get height() {
+        return this._height;
+    }
+    set height(value) {
+        this._height = value;
+    }
+    get width() {
+        return this._width;
+    }
+    set width(value) {
+        this._width = value;
+    }
+    get style() {
+        return this._style;
+    }
+    set style(value) {
+        this._style = value;
+    }
+    connectTo(boxes) {
         var lines = new Array();
         if (!boxes)
             return lines;
         for (var i in boxes) {
-            var box = boxes[i];
-            var line = PathHelper.drawLine(this, box);
+            let box = boxes[i];
+            let line = PathHelper.drawLine(this, box);
             lines.push(line);
         }
         return lines;
-    };
-    Box.prototype.connectToPoint = function (point) {
+    }
+    connectToPoint(point) {
         return PathHelper.drawLineFrom(point, this);
-    };
-    Box.prototype.create = function () {
+    }
+    create() {
         var rect = PathHelper.getNode('rect', {
             x: this.x,
             y: this.y,
@@ -87,14 +67,14 @@ var Box = /** @class */ (function () {
             strokeWidth: 2
         });
         return [rect];
-    };
-    Box.makeSpaceHorizontally = function (boxes) {
+    }
+    static makeSpaceHorizontally(boxes) {
         for (var i in boxes) {
-            var box1 = boxes[i];
+            let box1 = boxes[i];
             for (var j in boxes) {
                 if (i == j)
                     continue;
-                var box2 = boxes[j];
+                let box2 = boxes[j];
                 if (box1.overlapping(box2) || box2.overlapping(box1)) {
                     console.log(box1);
                     console.log(box2);
@@ -109,11 +89,10 @@ var Box = /** @class */ (function () {
                 }
             }
         }
-    };
-    Box.prototype.overlapping = function (b2) {
+    }
+    overlapping(b2) {
         return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) &&
             (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace));
-    };
-    return Box;
-}());
+    }
+}
 //# sourceMappingURL=box.js.map

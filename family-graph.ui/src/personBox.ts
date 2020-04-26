@@ -1,4 +1,6 @@
-﻿class PersonBox extends Box {
+﻿import { Event, EventDispatcher } from "./EventDispatcher";
+
+class PersonBox extends Box {
     person: Person;
 
     private _baseFamilyWidth: number = BoxWidth;
@@ -7,6 +9,17 @@
     private _classFemale: string = "female-box";
     private _classMale: string = "male-box";
     _lines = new Array<Line>();
+    private _onClickDispatcher: EventDispatcher<number>;
+
+    get onClick(): Event<number> {
+        return this._onClickDispatcher as Event<number>;
+    }
+
+    private boxSelected(id: number) {
+        console.log(id + " clicked");
+        //todo
+        //this._onClickDispatcher.dispatch(id);        
+    }
 
     constructor(person: Person) {
         super();
@@ -47,6 +60,7 @@
         this._baseFamilyWidth = value;
     }
 
+
     create(): SVGElement[] {
         var rect: SVGElement = PathHelper.getNode('rect',
             {
@@ -58,7 +72,7 @@
                 ry: 5,
                 class: this._boxClass
             });
-
+        
         var text = PathHelper.getNode('text',
             {
                 x: this.x + 10,
@@ -66,7 +80,41 @@
                 class: 'persons-name'
             });
         text.textContent = this.name;
+
+        rect.addEventListener("click", () => { this.boxSelected(this.person.id); });
+        text.addEventListener("click", () => { this.boxSelected(this.person.id); });
         return [rect, text];
+    }
+
+    startFromThisPersion(): SVGElement[] {
+        var result = this.createBaseTree();
+        var olds = this.drawParents();
+        olds.forEach(i => result.push(i));
+        return result;
+    }
+
+    drawParents(): SVGElement[] {
+        var result = new Array<SVGElement>();
+        var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
+        var createParent = (p: Person) => {
+            if (!p) return null;
+            var parent = new PersonBox(p);
+            parent.x = this.x;
+            parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
+            add(parent.create());
+            add(parent.drawParents());
+            return parent;
+        }
+        var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
+        var m: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
+
+        if (d && m) {
+            d.x = d.x - (d.width + BoxVerticalSpace)
+            m.x = m.x + BoxVerticalSpace * 2;
+            console.log(d);
+            console.log(m);
+        }
+        return result;
     }
 
     createBaseTree(): SVGElement[] {
@@ -108,7 +156,7 @@
         }
 
         var childrenBoxes = this.expandChildren();
-        if (childrenBoxes) {
+        if (childrenBoxes) {            
             for (var child of childrenBoxes) {
                 this._lines.push(child.lineToParents(childrenBoxes.concat([this, partnerBox])));
                 result.push(child);
@@ -150,15 +198,17 @@
     }
 
     // Set position to all children and there families
-    positionChildren(children: PersonBox[]): PersonBox[] {
-        var space = BoxHorizontalSpace * 2;
+    private positionChildren(children: PersonBox[]): PersonBox[]
+    {        
         if (!children) return null;
+
+        var space = BoxHorizontalSpace * 2;
         var childrenWidth = 0;
-        console.log(this.person.firstName + "\tx:" + this.x + "\ty:" + this.y);
-        var c = Math.max(1, children.length - 1);
+        //console.log(this.person.firstName + "\tx:" + this.x + "\ty:" + this.y);
+        var c = Math.max(1, this.countNodes(children)-1);
         var x = this.x - ((c * (this.width + space)) / 2);
         var y = this.y + this.height + space;
-        console.log(this.person.firstName + "\tc:" + c + "\tx:" + x + "\ty:" + y);
+        //console.log(this.person.firstName + "\tc:" + c + "\tx:" + x + "\ty:" + y);
 
         var result = new Array<PersonBox>();
         for (var child of children) {
@@ -166,19 +216,16 @@
             child.y = y;
             var childsFamily = child.expandBaseTree();
             x += child.familyWidth + space;
-            childrenWidth += child.familyWidth + space;
-            console.log("x:" + x);
-            this.updateLeft(x);
+            childrenWidth += child.familyWidth + space;            
             childsFamily.forEach(f => result.push(f));
-            console.log("ch:" + child.person.firstName + "\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth);
-            //console.log("ch:" + child.person.firstName + "\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth );
+            //console.log("ch:" + child.person.firstName + "\t\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth);            
         }
         
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
-        //console.log(this.person.firstName + "\tLeft - Width:\t" + this.familyLeft + " \t" + this.familyWidth);
-        console.log(this.person.firstName + "\tx,y,left,width:\t" + this.x + ",\t" + this.y + ",\t" + this.familyLeft + " \t" + this.familyWidth);
+        //console.log(this.person.firstName + "\t\tx,y,left,width:\t" + this.x + ",\t" + this.y + ",\t" + this.familyLeft + " \t" + this.familyWidth);
         return result;
     }
+
 
 
     // Make space for partner
@@ -203,6 +250,16 @@
         return this.positionChildren(chBoxs);
     }
 
+
+    countNodes(siblingNodes: PersonBox[]): number {
+        if (!siblingNodes) return 0;
+        var i = 0;
+        for (var person of siblingNodes) {
+            i++;
+            if (person.person.marriedPartner) i++;
+        }
+        return i;
+    }
    
 }
 

@@ -3,14 +3,14 @@ const BoxVerticalSpace: number = 60;
 const BoxWidth: number = 250;
 
 class Box {
-    private _x: number= 0;
+    private _x: number = 0;
     private _y: number = 0;
     private _height: number = 100;
     private _width: number = BoxWidth;
-    
+
     private _style: string;
     _bgColor: string = "gray";
-    _boxClass: string =  "unknown-box";
+    _boxClass: string = "unknown-box";
     get x(): number {
         return this._x;
     }
@@ -64,7 +64,7 @@ class Box {
         return lines;
     }
 
-    connectToPoint(point :DOMPoint): SVGElement{
+    connectToPoint(point: DOMPoint): SVGElement {
         return PathHelper.drawLineFrom(point, this);
     }
 
@@ -81,15 +81,14 @@ class Box {
                 stroke: 'black',
                 strokeWidth: 2
             });
-        return  [rect];
+        return [rect];
     }
 
 
     static makeSpaceHorizontally(boxes: Box[]) {
         for (var i in boxes) {
             let box1 = boxes[i];
-            for (var j in boxes) 
-            {
+            for (var j in boxes) {
                 if (i == j) continue;
 
                 let box2 = boxes[j];
@@ -110,9 +109,8 @@ class Box {
     }
 
     overlapping(b2: Box) {
-        return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) && 
-            (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace)) 
+        return (this.x <= b2.x && b2.x <= (this.x + this.width + BoxHorizontalSpace)) &&
+            (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace))
             ;
     }
-
 }

@@ -1,5 +1,5 @@
-var Person = /** @class */ (function () {
-    function Person(id, firstName, lastName, gender, maidenName, birth, death) {
+class Person {
+    constructor(id, firstName, lastName, gender, maidenName, birth, death) {
         this.gender = Gender.Male;
         this.relations = new Array();
         this.id = id;
@@ -10,48 +10,33 @@ var Person = /** @class */ (function () {
         this.birth = birth;
         this.death = death;
     }
-    Object.defineProperty(Person.prototype, "fullName", {
-        get: function () {
-            return this.firstName + " " + this.lastName;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Person.prototype, "marriedPartner", {
-        get: function () {
-            if (this.relations.length === 0)
-                return null;
-            for (var _i = 0, _a = this.relations; _i < _a.length; _i++) {
-                var rel = _a[_i];
-                if (rel.status === RelationStatus.Married) {
-                    if (rel.dad === this)
-                        return rel.mam;
-                    else
-                        return rel.dad;
-                }
-            }
+    get fullName() {
+        return this.firstName + " " + this.lastName;
+    }
+    get marriedPartner() {
+        if (this.relations.length === 0)
             return null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Person.prototype, "marriageChildren", {
-        get: function () {
-            if (this.relations.length === 0)
-                return null;
-            for (var _i = 0, _a = this.relations; _i < _a.length; _i++) {
-                var rel = _a[_i];
-                if (rel.status === RelationStatus.Married) {
-                    return rel.children;
-                }
+        for (var rel of this.relations) {
+            if (rel.status === RelationStatus.Married) {
+                if (rel.dad === this)
+                    return rel.mam;
+                else
+                    return rel.dad;
             }
+        }
+        return null;
+    }
+    get marriageChildren() {
+        if (this.relations.length === 0)
             return null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Person;
-}());
+        for (var rel of this.relations) {
+            if (rel.status === RelationStatus.Married) {
+                return rel.children;
+            }
+        }
+        return null;
+    }
+}
 var Gender;
 (function (Gender) {
     Gender[Gender["Male"] = 0] = "Male";

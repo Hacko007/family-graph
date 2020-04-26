@@ -1,5 +1,5 @@
-var Relation = /** @class */ (function () {
-    function Relation(dad, mam, status) {
+class Relation {
+    constructor(dad, mam, status) {
         this._children = new Array();
         this._status = RelationStatus.Married;
         this.dad = dad;
@@ -10,57 +10,40 @@ var Relation = /** @class */ (function () {
         this.dad.relations.push(this);
         this.mam.relations.push(this);
     }
-    Object.defineProperty(Relation.prototype, "dad", {
-        get: function () {
-            return this._dad;
-        },
-        set: function (value) {
-            this._dad = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Relation.prototype, "mam", {
-        get: function () {
-            return this._mam;
-        },
-        set: function (value) {
-            this._mam = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Relation.prototype, "status", {
-        get: function () {
-            return this._status;
-        },
-        set: function (value) {
-            this._status = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Relation.prototype, "children", {
-        get: function () {
-            return this._children;
-        },
-        set: function (value) {
-            this._children = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Relation.prototype.addChildren = function (children) {
+    get dad() {
+        return this._dad;
+    }
+    set dad(value) {
+        this._dad = value;
+    }
+    get mam() {
+        return this._mam;
+    }
+    set mam(value) {
+        this._mam = value;
+    }
+    get status() {
+        return this._status;
+    }
+    set status(value) {
+        this._status = value;
+    }
+    get children() {
+        return this._children;
+    }
+    set children(value) {
+        this._children = value;
+    }
+    addChildren(children) {
         if (!children)
             return;
         for (var i in children) {
-            var child = children[i];
+            let child = children[i];
             child.parents = this;
             this._children.push(child);
         }
-    };
-    return Relation;
-}());
+    }
+}
 var RelationStatus;
 (function (RelationStatus) {
     RelationStatus[RelationStatus["Married"] = 0] = "Married";
