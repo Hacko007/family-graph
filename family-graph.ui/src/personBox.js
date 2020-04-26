@@ -67,9 +67,12 @@ class PersonBox extends Box {
         return [rect, text];
     }
     startFromThisPersion() {
-        var result = this.createBaseTree();
+        var result = new Array();
+        var add = (items) => { if (items)
+            items.forEach(i => result.push(i)); };
         var olds = this.drawParents();
         olds.forEach(i => i.create().forEach(box => result.push(box)));
+        add(this.createBaseTree());
         return result;
     }
     drawParents() {
@@ -93,7 +96,9 @@ class PersonBox extends Box {
             m.x = m.x + BoxVerticalSpace * 2;
             console.log(d);
             console.log(m);
+            this._lines.push(Line.lineTo(d, m, LineType.Partners));
         }
+        this._lines.push(this.lineToParents([d, m]));
         return result;
     }
     createBaseTree() {
