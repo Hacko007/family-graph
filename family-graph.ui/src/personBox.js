@@ -60,8 +60,7 @@ class PersonBox extends Box {
         return this._onClickDispatcher;
     }
     boxSelected(pb) {
-        console.log(pb.person.id + " clicked");
-        //todo
+        console.log("clicked", pb.person.id, pb.name);
         this._onClickDispatcher.dispatch(pb);
     }
     init() {
