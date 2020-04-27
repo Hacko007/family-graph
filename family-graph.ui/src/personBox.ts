@@ -1,15 +1,17 @@
 ﻿import { Event, EventDispatcher } from "./EventDispatcher";
 
 class PersonBox extends Box {
-    person: Person;
+    private person: Person;
 
     private _baseFamilyWidth: number = BoxWidth;
     private _familyLeft: number = 0;
     private _isMale: boolean;
     private _classFemale: string = "female-box";
-    private _classMale: string = "male-box";
-    _lines = new Array<Line>();
+    private _classMale: string = "male-box";    
     private _onClickDispatcher: EventDispatcher<number>;
+    private _children = new Array<PersonBox>();
+    private _parents = new Array<PersonBox>();
+    private _lines = new Array<Line>();
 
     get onClick(): Event<number> {
         return this._onClickDispatcher as Event<number>;
@@ -89,9 +91,13 @@ class PersonBox extends Box {
     startFromThisPersion(): SVGElement[] {
         var result = new Array<SVGElement>();
         var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
+        var addBoxes = (items: PersonBox[]) => {if (items) items.forEach(i => i.create().forEach(box => result.push(box)))}
         var olds = this.drawParents();
-        olds.forEach(i => i.create().forEach(box => result.push(box)));
-        add(this.createBaseTree());        
+        var baseFamily = this.createBaseTree();        
+        add(this.drawLines(baseFamily));
+        add(this.drawLines(olds));
+        addBoxes(olds);
+        addBoxes(baseFamily);
         return result;
     }
 
@@ -121,10 +127,7 @@ class PersonBox extends Box {
         return result;
     }
 
-    createBaseTree(): SVGElement[] {
-        this._familyLeft = this.x;
-
-        var boxes = this.expandBaseTree();
+    drawLines(boxes: Array<PersonBox>): Array<SVGElement> {
         if (!boxes) return null;
         var elements = new Array<SVGElement>();
         var add = (item: any) => { if (item) elements.push(item); };
@@ -140,11 +143,14 @@ class PersonBox extends Box {
                 }
             }
         }
-        // Boxes
-        for (var pbox of boxes) {
-            pbox.create().forEach(p => add(p));
-        }
         return elements;
+    }
+
+    createBaseTree(): PersonBox[] {
+        this._familyLeft = this.x;
+        var boxes = this.expandBaseTree();
+        if (!boxes) return null;        
+        return boxes;
     }
 
     expandBaseTree(): PersonBox[] {

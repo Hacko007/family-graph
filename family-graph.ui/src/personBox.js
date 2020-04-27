@@ -7,6 +7,8 @@ class PersonBox extends Box {
         this._familyLeft = 0;
         this._classFemale = "female-box";
         this._classMale = "male-box";
+        this._children = new Array();
+        this._parents = new Array();
         this._lines = new Array();
         this.person = person;
         this.isMale = person.gender === Gender.Male;
@@ -70,9 +72,14 @@ class PersonBox extends Box {
         var result = new Array();
         var add = (items) => { if (items)
             items.forEach(i => result.push(i)); };
+        var addBoxes = (items) => { if (items)
+            items.forEach(i => i.create().forEach(box => result.push(box))); };
         var olds = this.drawParents();
-        olds.forEach(i => i.create().forEach(box => result.push(box)));
-        add(this.createBaseTree());
+        var baseFamily = this.createBaseTree();
+        add(this.drawLines(baseFamily));
+        add(this.drawLines(olds));
+        addBoxes(olds);
+        addBoxes(baseFamily);
         return result;
     }
     drawParents() {
@@ -101,9 +108,7 @@ class PersonBox extends Box {
         this._lines.push(this.lineToParents([d, m]));
         return result;
     }
-    createBaseTree() {
-        this._familyLeft = this.x;
-        var boxes = this.expandBaseTree();
+    drawLines(boxes) {
         if (!boxes)
             return null;
         var elements = new Array();
@@ -122,11 +127,14 @@ class PersonBox extends Box {
                 }
             }
         }
-        // Boxes
-        for (var pbox of boxes) {
-            pbox.create().forEach(p => add(p));
-        }
         return elements;
+    }
+    createBaseTree() {
+        this._familyLeft = this.x;
+        var boxes = this.expandBaseTree();
+        if (!boxes)
+            return null;
+        return boxes;
     }
     expandBaseTree() {
         var result = new Array();
