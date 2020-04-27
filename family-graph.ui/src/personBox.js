@@ -40,15 +40,13 @@ exports.EventDispatcher = EventDispatcher;
 class PersonBox extends Box {
     constructor(person) {
         super();
+        this._leftLimit = -1000000;
         this._baseFamilyWidth = BoxWidth;
         this._familyLeft = 0;
-        this._leftLimit = -1000000;
         this._classFemale = "female-box";
         this._classMale = "male-box";
         this._onClickDispatcher = new EventDispatcher();
-        this._children = new Array();
-        this._parents = new Array();
-        this._lines = new Array();
+        this.init();
         this.person = person;
         this.isMale = person.gender === Gender.Male;
         if (this.isMale) {
@@ -65,6 +63,12 @@ class PersonBox extends Box {
         console.log(pb.person.id + " clicked");
         //todo
         this._onClickDispatcher.dispatch(pb);
+    }
+    init() {
+        this._children = new Array();
+        this._parents = new Array();
+        this._lines = new Array();
+        this._onClickDispatcher = new EventDispatcher();
     }
     get name() {
         return this.person.fullName;
@@ -108,6 +112,7 @@ class PersonBox extends Box {
         return [rect, text];
     }
     startFromThisPersion() {
+        this.init();
         var result = new Array();
         var add = (items) => { if (items)
             items.forEach(i => result.push(i)); };

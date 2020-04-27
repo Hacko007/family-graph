@@ -65,19 +65,19 @@ export class EventDispatcher<E> implements Event<E> {
 }
 
 class PersonBox extends Box {
-    private person: Person;
-
-    private _baseFamilyWidth: number = BoxWidth;
-    private _familyLeft: number = 0;
+    public _lines: Array<Line>;
+    public _children: Array<PersonBox>;
     public _leftLimit: number = -1000000;
+
+    private person: Person;
+    private _baseFamilyWidth: number = BoxWidth;
+    private _familyLeft: number = 0;    
     private _isMale: boolean;
     private _classFemale: string = "female-box";
     private _classMale: string = "male-box";
-    private _onClickDispatcher: EventDispatcher<PersonBox> = new EventDispatcher<PersonBox>();
-    public _children = new Array<PersonBox>();
-    private _parents = new Array<PersonBox>();
-    public _lines = new Array<Line>();
-
+    private _onClickDispatcher: EventDispatcher<PersonBox> = new EventDispatcher<PersonBox>();    
+    private _parents: Array<PersonBox>;
+    
     get onClick(): Event<PersonBox> {
         return this._onClickDispatcher as Event<PersonBox>;
     }
@@ -90,6 +90,7 @@ class PersonBox extends Box {
 
     constructor(person: Person) {
         super();
+        this.init();
         this.person = person;
         this.isMale = person.gender === Gender.Male;
         if (this.isMale) {
@@ -98,7 +99,12 @@ class PersonBox extends Box {
             this._boxClass = this._classFemale;
         }
     }
-
+    private init() {
+        this._children = new Array<PersonBox>();
+        this._parents = new Array<PersonBox>();
+        this._lines = new Array<Line>();
+        this._onClickDispatcher = new EventDispatcher<PersonBox>();
+    }
     get name(): string {
         return this.person.fullName;
     }
@@ -154,11 +160,12 @@ class PersonBox extends Box {
     }
 
     startFromThisPersion(): SVGElement[] {
+        this.init();
         var result = new Array<SVGElement>();
         var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
-        var addBoxes = (items: PersonBox[]) => {if (items) items.forEach(i => i.create(this).forEach(box => result.push(box)))}
+        var addBoxes = (items: PersonBox[]) => { if (items) items.forEach(i => i.create(this).forEach(box => result.push(box))) }
         var olds = this.drawParents();
-        var baseFamily = this.createBaseTree();        
+        var baseFamily = this.createBaseTree();
         add(this.drawLines(baseFamily));
         add(this.drawLines(olds));
         addBoxes(olds);
