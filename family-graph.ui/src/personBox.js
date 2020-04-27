@@ -23,8 +23,8 @@ class PersonBox extends Box {
     get onClick() {
         return this._onClickDispatcher;
     }
-    boxSelected(id) {
-        console.log(id + " clicked");
+    boxSelected(pb) {
+        console.log(pb.person.id + " clicked");
         //todo
         //this._onClickDispatcher.dispatch(id);        
     }
@@ -65,8 +65,8 @@ class PersonBox extends Box {
             class: 'persons-name'
         });
         text.textContent = this.name;
-        rect.addEventListener("click", () => { this.boxSelected(this.person.id); });
-        text.addEventListener("click", () => { this.boxSelected(this.person.id); });
+        rect.addEventListener("click", () => { this.boxSelected(this); });
+        text.addEventListener("click", () => { this.boxSelected(this); });
         return [rect, text];
     }
     startFromThisPersion() {
@@ -198,7 +198,7 @@ class PersonBox extends Box {
         var c = Math.max(1, this.countNodes(this._children) - 1);
         var x = this.x - ((c * (this.width + space)) / 2);
         var y = this.y + this.height + space;
-        console.log(this.name, this._leftLimit, x);
+        //console.log(this.name, this._leftLimit, x);
         //console.log(this.person.firstName + "\tc:" + c + "\tx:" + x + "\ty:" + y);
         var leftLimit = this._leftLimit;
         var result = new Array();

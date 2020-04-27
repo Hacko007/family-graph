@@ -8,18 +8,18 @@ class PersonBox extends Box {
     public _leftLimit: number = -1000000;
     private _isMale: boolean;
     private _classFemale: string = "female-box";
-    private _classMale: string = "male-box";    
-    private _onClickDispatcher: EventDispatcher<number>;
+    private _classMale: string = "male-box";
+    private _onClickDispatcher: EventDispatcher<PersonBox>;//= new EventDispatcher<PersonBox>();
     public _children = new Array<PersonBox>();
     private _parents = new Array<PersonBox>();
     public _lines = new Array<Line>();
 
-    get onClick(): Event<number> {
-        return this._onClickDispatcher as Event<number>;
+    get onClick(): Event<PersonBox> {
+        return this._onClickDispatcher as Event<PersonBox>;
     }
 
-    private boxSelected(id: number) {
-        console.log(id + " clicked");
+    private boxSelected(pb: PersonBox) {
+        console.log(pb.person.id + " clicked");
         //todo
         //this._onClickDispatcher.dispatch(id);        
     }
@@ -84,8 +84,8 @@ class PersonBox extends Box {
             });
         text.textContent = this.name;
 
-        rect.addEventListener("click", () => { this.boxSelected(this.person.id); });
-        text.addEventListener("click", () => { this.boxSelected(this.person.id); });
+        rect.addEventListener("click", () => { this.boxSelected(this); });
+        text.addEventListener("click", () => { this.boxSelected(this); });
         return [rect, text];
     }
 

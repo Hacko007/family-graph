@@ -751,16 +751,14 @@ var r596 = new Relation(p596, p72, null); r596.addChildren({ p597 });
 var r601 = new Relation(p601, p225, null); r601.addChildren({ p602 });
 var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
 
-        // let box = new PersonBox(p20); // adzo
+         let box = new PersonBox(p20); // adzo
         //let box = new PersonBox(p7); // cako
-        let box = new PersonBox(p24); // midzo nazim
+        //let box = new PersonBox(p24); // midzo nazim
         box.x = 600;
         box.y = 300;
-        //box.onClick().register(i => {alert(i)});
+        //box.onClick.register(i => {console.log(i)});
         var v = box.startFromThisPersion();
         v.forEach(e => mapMatrix.appendChild(e));
-
-        //console.log(box.familyLeft);
 
         pan(box.familyLeft + 10, 0);
 
