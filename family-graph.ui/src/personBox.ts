@@ -1,73 +1,9 @@
-﻿/**
- * Event handler that can subscribe to a dispatcher.
- */
-export type EventHandler<E> = (event: E) => void;
-/**
- * Event that can be subscribed to.
- */
-export interface Event<E> {
-    /**
-     * Register a new handler with the dispatcher. Any time the event is
-     * dispatched, the handler will be notified.
-     * @param handler The handler to register.
-     */
-    register(handler: EventHandler<E>): void;
-    /**
-     * Desubscribe a handler from the dispatcher.
-     * @param handler The handler to remove.
-     */
-    unregister(handler: EventHandler<E>): void;
-}
-
-
-
-export class EventDispatcher<E> implements Event<E> {
-    /**
-     * The handlers that want to be notified when an event occurs.
-     */
-    private _handlers: EventHandler<E>[];
-
-    /**
-     * Create a new event dispatcher.
-     */
-    constructor() {
-        this._handlers = [];
-    }
-    /**
-    * Register a new handler with the dispatcher. Any time the event is
-    * dispatched, the handler will be notified.
-    * @param handler The handler to register.
-    */
-    public register(handler: EventHandler<E>): void {
-        this._handlers.push(handler);
-    }
-
-    /**
-     * Desubscribe a handler from the dispatcher.
-     * @param handler The handler to remove.
-     */
-    public unregister(handler: EventHandler<E>): void {
-        for (let i = 0; i < this._handlers.length; i++) {
-            if (this._handlers[i] === handler) {
-                this._handlers.splice(i, 1);
-            }
-        }
-    }
-    /**
-     * Dispatch an event to all the subscribers.
-     * @param event The data of the event that occured.
-     */
-    public dispatch(event: E): void {
-        for (let handler of this._handlers) {
-            handler(event);
-        }
-    }
-}
-
+﻿
 class PersonBox extends Box {
     public _lines: Array<Line>;
     public _children: Array<PersonBox>;
     public _leftLimit: number = -1000000;
+    public _rightLimit: number = 1000000;
 
     private person: Person;
     private _baseFamilyWidth: number = BoxWidth;
@@ -77,7 +13,8 @@ class PersonBox extends Box {
     private _classMale: string = "male-box";
     private _onClickDispatcher: EventDispatcher<PersonBox> = new EventDispatcher<PersonBox>();    
     private _parents: Array<PersonBox>;
-    
+    private _partnerBox: PersonBox;
+
     get onClick(): Event<PersonBox> {
         return this._onClickDispatcher as Event<PersonBox>;
     }
@@ -179,7 +116,9 @@ class PersonBox extends Box {
         var createParent = (p: Person) => {
             if (!p) return null;
             var parent = new PersonBox(p);
-            parent.x = this.x;
+            parent._leftLimit = this.isMale ? Number.NEGATIVE_INFINITY : this.x;
+            parent._rightLimit = this.isMale ? this.x : Number.POSITIVE_INFINITY;
+            parent.x = this.isMale ? Math.max(this.x, parent._rightLimit) : Math.min(this.x, parent._leftLimit);
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
             add(parent.drawParents());
             result.push(parent);
@@ -191,13 +130,19 @@ class PersonBox extends Box {
         var m: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
 
         if (d && m) {
-            d.x = d.x - (d.width + BoxVerticalSpace)
-            m.x = m.x + BoxVerticalSpace * 2;
-           // console.log(d);
-           // console.log(m);
+            d.expandPartner();                    
             d._lines.push( Line.lineTo(d, m, LineType.Partners));
         }
+
         this._lines.push(this.lineToParents([d, m]));
+
+        // draw partners parents
+        if (!this._partnerBox && this.person.marriedPartner) {
+            this.expandPartner();
+            let partnerParents = this._partnerBox.drawParents();
+            this._lines.push(this._partnerBox.lineToParents(partnerParents));
+            //add(partnerParents);
+        }
         return result;
     }
 
@@ -233,16 +178,16 @@ class PersonBox extends Box {
         result.push(this);
         this._familyLeft = Math.max(this.x, this._leftLimit);
 
-        var partnerBox = this.expandPartner();
-        if (partnerBox) {
-            this._lines.push(Line.lineTo(this, partnerBox, LineType.Partners));
-            result.push(partnerBox);
+        this.expandPartner();
+        if (this._partnerBox) {
+            this._lines.push(Line.lineTo(this, this._partnerBox, LineType.Partners));
+            result.push(this._partnerBox);
         }
 
         var childrenBoxes = this.expandChildren();
         if (childrenBoxes) {            
             for (var child of childrenBoxes) {
-                this._lines.push(child.lineToParents(childrenBoxes.concat([this, partnerBox])));
+                this._lines.push(child.lineToParents(childrenBoxes.concat([this, this._partnerBox])));
                 result.push(child);
             }
         }
@@ -272,7 +217,14 @@ class PersonBox extends Box {
 
         var space = BoxHorizontalSpace * 2;
         partner.y = this.y;
-        if (this.isMale) {
+
+        let rghLimit = this._rightLimit - this.width - space;
+        rghLimit -= this.isMale ? this.width : 0;
+
+        this.x = Math.min(this.x, rghLimit);
+        this.x = Math.max(this.x, this._leftLimit);
+
+        if (this.isMale) {            
             partner.x = this.x + this.width + space;
         } else {
             partner.x = this.x;
@@ -331,13 +283,13 @@ class PersonBox extends Box {
     }
 
     // Make space for partner
-    expandPartner(): PersonBox {
-        if (!this.person) return null;
+    expandPartner() {
+        if (!this.person) return ;
         var partner = this.person.marriedPartner;
-        if (!partner) return null;
-        var partnerBox = new PersonBox(partner);
-        this.positionPartner(partnerBox);
-        return partnerBox;
+        if (!partner) return ;
+        this._partnerBox = new PersonBox(partner);
+        this._partnerBox._partnerBox = this;
+        this.positionPartner(this._partnerBox);        
     }
 
     // Make space for children
@@ -392,4 +344,71 @@ enum LineType {
     Partners,
     Parents,
     Child
+}
+
+
+/**
+ * Event handler that can subscribe to a dispatcher.
+ */
+export type EventHandler<E> = (event: E) => void;
+/**
+ * Event that can be subscribed to.
+ */
+export interface Event<E> {
+    /**
+     * Register a new handler with the dispatcher. Any time the event is
+     * dispatched, the handler will be notified.
+     * @param handler The handler to register.
+     */
+    register(handler: EventHandler<E>): void;
+    /**
+     * Desubscribe a handler from the dispatcher.
+     * @param handler The handler to remove.
+     */
+    unregister(handler: EventHandler<E>): void;
+}
+
+
+
+export class EventDispatcher<E> implements Event<E> {
+    /**
+     * The handlers that want to be notified when an event occurs.
+     */
+    private _handlers: EventHandler<E>[];
+
+    /**
+     * Create a new event dispatcher.
+     */
+    constructor() {
+        this._handlers = [];
+    }
+    /**
+    * Register a new handler with the dispatcher. Any time the event is
+    * dispatched, the handler will be notified.
+    * @param handler The handler to register.
+    */
+    public register(handler: EventHandler<E>): void {
+        this._handlers.push(handler);
+    }
+
+    /**
+     * Desubscribe a handler from the dispatcher.
+     * @param handler The handler to remove.
+     */
+    public unregister(handler: EventHandler<E>): void {
+        for (let i = 0; i < this._handlers.length; i++) {
+            if (this._handlers[i] === handler) {
+                this._handlers.splice(i, 1);
+            }
+        }
+    }
+    /**
+     * Dispatch an event to all the subscribers.
+     * @param event The data of the event that occured.
+     */
+    public dispatch(event: E): void {
+        for (let handler of this._handlers) {
+            handler(event);
+        }
+    }
 }
