@@ -68,7 +68,7 @@ class Box {
         return PathHelper.drawLineFrom(point, this);
     }
 
-    create(): SVGElement[] {
+    create(eventPb:any): SVGElement[] {
         var rect: SVGElement = PathHelper.getNode('rect',
             {
                 x: this.x,

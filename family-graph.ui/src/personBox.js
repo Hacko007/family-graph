@@ -1,5 +1,42 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+class EventDispatcher {
+    /**
+     * Create a new event dispatcher.
+     */
+    constructor() {
+        this._handlers = [];
+    }
+    /**
+    * Register a new handler with the dispatcher. Any time the event is
+    * dispatched, the handler will be notified.
+    * @param handler The handler to register.
+    */
+    register(handler) {
+        this._handlers.push(handler);
+    }
+    /**
+     * Desubscribe a handler from the dispatcher.
+     * @param handler The handler to remove.
+     */
+    unregister(handler) {
+        for (let i = 0; i < this._handlers.length; i++) {
+            if (this._handlers[i] === handler) {
+                this._handlers.splice(i, 1);
+            }
+        }
+    }
+    /**
+     * Dispatch an event to all the subscribers.
+     * @param event The data of the event that occured.
+     */
+    dispatch(event) {
+        for (let handler of this._handlers) {
+            handler(event);
+        }
+    }
+}
+exports.EventDispatcher = EventDispatcher;
 class PersonBox extends Box {
     constructor(person) {
         super();
@@ -8,6 +45,7 @@ class PersonBox extends Box {
         this._leftLimit = -1000000;
         this._classFemale = "female-box";
         this._classMale = "male-box";
+        this._onClickDispatcher = new EventDispatcher();
         this._children = new Array();
         this._parents = new Array();
         this._lines = new Array();
@@ -26,7 +64,7 @@ class PersonBox extends Box {
     boxSelected(pb) {
         console.log(pb.person.id + " clicked");
         //todo
-        //this._onClickDispatcher.dispatch(id);        
+        this._onClickDispatcher.dispatch(pb);
     }
     get name() {
         return this.person.fullName;
@@ -49,7 +87,7 @@ class PersonBox extends Box {
     set familyWidth(value) {
         this._baseFamilyWidth = value;
     }
-    create() {
+    create(eventPb) {
         var rect = PathHelper.getNode('rect', {
             x: this.x,
             y: this.y,
@@ -65,8 +103,8 @@ class PersonBox extends Box {
             class: 'persons-name'
         });
         text.textContent = this.name;
-        rect.addEventListener("click", () => { this.boxSelected(this); });
-        text.addEventListener("click", () => { this.boxSelected(this); });
+        rect.addEventListener("click", () => { eventPb.boxSelected(this); });
+        text.addEventListener("click", () => { eventPb.boxSelected(this); });
         return [rect, text];
     }
     startFromThisPersion() {
@@ -74,7 +112,7 @@ class PersonBox extends Box {
         var add = (items) => { if (items)
             items.forEach(i => result.push(i)); };
         var addBoxes = (items) => { if (items)
-            items.forEach(i => i.create().forEach(box => result.push(box))); };
+            items.forEach(i => i.create(this).forEach(box => result.push(box))); };
         var olds = this.drawParents();
         var baseFamily = this.createBaseTree();
         add(this.drawLines(baseFamily));

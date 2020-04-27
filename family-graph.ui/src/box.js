@@ -54,7 +54,7 @@ class Box {
     connectToPoint(point) {
         return PathHelper.drawLineFrom(point, this);
     }
-    create() {
+    create(eventPb) {
         var rect = PathHelper.getNode('rect', {
             x: this.x,
             y: this.y,

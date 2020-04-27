@@ -1,4 +1,68 @@
-﻿import { Event, EventDispatcher } from "./EventDispatcher";
+﻿/**
+ * Event handler that can subscribe to a dispatcher.
+ */
+export type EventHandler<E> = (event: E) => void;
+/**
+ * Event that can be subscribed to.
+ */
+export interface Event<E> {
+    /**
+     * Register a new handler with the dispatcher. Any time the event is
+     * dispatched, the handler will be notified.
+     * @param handler The handler to register.
+     */
+    register(handler: EventHandler<E>): void;
+    /**
+     * Desubscribe a handler from the dispatcher.
+     * @param handler The handler to remove.
+     */
+    unregister(handler: EventHandler<E>): void;
+}
+
+
+
+export class EventDispatcher<E> implements Event<E> {
+    /**
+     * The handlers that want to be notified when an event occurs.
+     */
+    private _handlers: EventHandler<E>[];
+
+    /**
+     * Create a new event dispatcher.
+     */
+    constructor() {
+        this._handlers = [];
+    }
+    /**
+    * Register a new handler with the dispatcher. Any time the event is
+    * dispatched, the handler will be notified.
+    * @param handler The handler to register.
+    */
+    public register(handler: EventHandler<E>): void {
+        this._handlers.push(handler);
+    }
+
+    /**
+     * Desubscribe a handler from the dispatcher.
+     * @param handler The handler to remove.
+     */
+    public unregister(handler: EventHandler<E>): void {
+        for (let i = 0; i < this._handlers.length; i++) {
+            if (this._handlers[i] === handler) {
+                this._handlers.splice(i, 1);
+            }
+        }
+    }
+    /**
+     * Dispatch an event to all the subscribers.
+     * @param event The data of the event that occured.
+     */
+    public dispatch(event: E): void {
+        for (let handler of this._handlers) {
+            handler(event);
+        }
+    }
+}
 
 class PersonBox extends Box {
     private person: Person;
@@ -9,7 +73,7 @@ class PersonBox extends Box {
     private _isMale: boolean;
     private _classFemale: string = "female-box";
     private _classMale: string = "male-box";
-    private _onClickDispatcher: EventDispatcher<PersonBox>;//= new EventDispatcher<PersonBox>();
+    private _onClickDispatcher: EventDispatcher<PersonBox> = new EventDispatcher<PersonBox>();
     public _children = new Array<PersonBox>();
     private _parents = new Array<PersonBox>();
     public _lines = new Array<Line>();
@@ -21,7 +85,7 @@ class PersonBox extends Box {
     private boxSelected(pb: PersonBox) {
         console.log(pb.person.id + " clicked");
         //todo
-        //this._onClickDispatcher.dispatch(id);        
+        this._onClickDispatcher.dispatch(pb);
     }
 
     constructor(person: Person) {
@@ -64,7 +128,7 @@ class PersonBox extends Box {
     }
 
 
-    create(): SVGElement[] {
+    create(eventPb: PersonBox): SVGElement[] {
         var rect: SVGElement = PathHelper.getNode('rect',
             {
                 x: this.x,
@@ -84,15 +148,15 @@ class PersonBox extends Box {
             });
         text.textContent = this.name;
 
-        rect.addEventListener("click", () => { this.boxSelected(this); });
-        text.addEventListener("click", () => { this.boxSelected(this); });
+        rect.addEventListener("click", () => { eventPb.boxSelected(this); });
+        text.addEventListener("click", () => { eventPb.boxSelected(this); });
         return [rect, text];
     }
 
     startFromThisPersion(): SVGElement[] {
         var result = new Array<SVGElement>();
         var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
-        var addBoxes = (items: PersonBox[]) => {if (items) items.forEach(i => i.create().forEach(box => result.push(box)))}
+        var addBoxes = (items: PersonBox[]) => {if (items) items.forEach(i => i.create(this).forEach(box => result.push(box)))}
         var olds = this.drawParents();
         var baseFamily = this.createBaseTree();        
         add(this.drawLines(baseFamily));

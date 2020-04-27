@@ -16,7 +16,7 @@
     <script href="src/Relation.js"></script>
     <script href="src/Person.js"></script>
     <script href="src/personBox.js"></script>
-    <script href="src/EventDispatcher.js"></script>
+    
     <script type="text/ecmascript">
         <![CDATA[
         var dx = 0;
@@ -756,7 +756,7 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
         //let box = new PersonBox(p24); // midzo nazim
         box.x = 600;
         box.y = 300;
-        //box.onClick.register(i => {console.log(i)});
+        box.onClick.register(box => {showThisPerson(box)});
         var v = box.startFromThisPersion();
         v.forEach(e => mapMatrix.appendChild(e));
 
@@ -765,7 +765,12 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
 
         }
 
-
+        function showThisPerson(box){
+          mapMatrix.innerHTML ='';
+          box.onClick.register(b => {showThisPerson(b)});
+          var v = box.startFromThisPersion();
+          v.forEach(e => mapMatrix.appendChild(e));  
+        }
 
         function pan(dx, dy) {
           try {
