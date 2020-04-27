@@ -5,6 +5,7 @@ class PersonBox extends Box {
         super();
         this._baseFamilyWidth = BoxWidth;
         this._familyLeft = 0;
+        this._leftLimit = -1000000;
         this._classFemale = "female-box";
         this._classMale = "male-box";
         this._children = new Array();
@@ -94,6 +95,7 @@ class PersonBox extends Box {
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
             add(parent.drawParents());
             result.push(parent);
+            this._parents.push(parent);
             return parent;
         };
         var d = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
@@ -101,9 +103,9 @@ class PersonBox extends Box {
         if (d && m) {
             d.x = d.x - (d.width + BoxVerticalSpace);
             m.x = m.x + BoxVerticalSpace * 2;
-            console.log(d);
-            console.log(m);
-            this._lines.push(Line.lineTo(d, m, LineType.Partners));
+            // console.log(d);
+            // console.log(m);
+            d._lines.push(Line.lineTo(d, m, LineType.Partners));
         }
         this._lines.push(this.lineToParents([d, m]));
         return result;
@@ -114,7 +116,7 @@ class PersonBox extends Box {
         var elements = new Array();
         var add = (item) => { if (item)
             elements.push(item); };
-        // Connection
+        // Connect all boxes
         for (var pbox of boxes) {
             for (var line of pbox._lines) {
                 if (!line)
@@ -130,7 +132,7 @@ class PersonBox extends Box {
         return elements;
     }
     createBaseTree() {
-        this._familyLeft = this.x;
+        this._familyLeft = Math.max(this.x, this._leftLimit);
         var boxes = this.expandBaseTree();
         if (!boxes)
             return null;
@@ -139,7 +141,7 @@ class PersonBox extends Box {
     expandBaseTree() {
         var result = new Array();
         result.push(this);
-        this._familyLeft = this.x;
+        this._familyLeft = Math.max(this.x, this._leftLimit);
         var partnerBox = this.expandPartner();
         if (partnerBox) {
             this._lines.push(Line.lineTo(this, partnerBox, LineType.Partners));
@@ -187,29 +189,48 @@ class PersonBox extends Box {
         this.familyWidth = 2 * this.width + space;
     }
     // Set position to all children and there families
-    positionChildren(children) {
-        if (!children)
+    positionChildren() {
+        if (!this._children)
             return null;
         var space = BoxHorizontalSpace * 2;
         var childrenWidth = 0;
         //console.log(this.person.firstName + "\tx:" + this.x + "\ty:" + this.y);
-        var c = Math.max(1, this.countNodes(children) - 1);
+        var c = Math.max(1, this.countNodes(this._children) - 1);
         var x = this.x - ((c * (this.width + space)) / 2);
         var y = this.y + this.height + space;
+        console.log(this.name, this._leftLimit, x);
         //console.log(this.person.firstName + "\tc:" + c + "\tx:" + x + "\ty:" + y);
+        var leftLimit = this._leftLimit;
         var result = new Array();
-        for (var child of children) {
-            child.x = x;
+        for (var child of this._children) {
             child.y = y;
+            child.x = Math.max(x, leftLimit);
+            child._leftLimit = leftLimit;
             var childsFamily = child.expandBaseTree();
-            x += child.familyWidth + space;
-            childrenWidth += child.familyWidth + space;
+            var [left, right] = this.calculateFamilyWidth(child);
+            //console.log(child.name, child.x, x, left, right);
+            x = right + space; /// child.x + child.familyWidth + space;
+            leftLimit = x;
+            childrenWidth = right; //+=  child.familyWidth + space;     
+            child.familyWidth = right;
             childsFamily.forEach(f => result.push(f));
             //console.log("ch:" + child.person.firstName + "\t\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth);            
         }
         this.familyWidth = Math.max(this.familyWidth, childrenWidth);
         //console.log(this.person.firstName + "\t\tx,y,left,width:\t" + this.x + ",\t" + this.y + ",\t" + this.familyLeft + " \t" + this.familyWidth);
         return result;
+    }
+    calculateFamilyWidth(pBox) {
+        if (!pBox)
+            return [0, 0];
+        var left = pBox.x;
+        var right = pBox.x + pBox.width;
+        for (var child of pBox._children) {
+            var [l, r] = this.calculateFamilyWidth(child);
+            left = Math.min(left, l);
+            right = Math.max(right, r);
+        }
+        return [left, right];
     }
     // Make space for partner
     expandPartner() {
@@ -229,11 +250,10 @@ class PersonBox extends Box {
         var children = this.person.marriageChildren;
         if (!children)
             return null;
-        var chBoxs = new Array();
         for (var child of children) {
-            chBoxs.push(new PersonBox(child));
+            this._children.push(new PersonBox(child));
         }
-        return this.positionChildren(chBoxs);
+        return this.positionChildren();
     }
     countNodes(siblingNodes) {
         if (!siblingNodes)

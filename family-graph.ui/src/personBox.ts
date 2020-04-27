@@ -5,13 +5,14 @@ class PersonBox extends Box {
 
     private _baseFamilyWidth: number = BoxWidth;
     private _familyLeft: number = 0;
+    public _leftLimit: number = -1000000;
     private _isMale: boolean;
     private _classFemale: string = "female-box";
     private _classMale: string = "male-box";    
     private _onClickDispatcher: EventDispatcher<number>;
-    private _children = new Array<PersonBox>();
+    public _children = new Array<PersonBox>();
     private _parents = new Array<PersonBox>();
-    private _lines = new Array<Line>();
+    public _lines = new Array<Line>();
 
     get onClick(): Event<number> {
         return this._onClickDispatcher as Event<number>;
@@ -104,6 +105,7 @@ class PersonBox extends Box {
     drawParents(): PersonBox[] {
         var result = new Array<PersonBox>();
         var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
+
         var createParent = (p: Person) => {
             if (!p) return null;
             var parent = new PersonBox(p);
@@ -111,17 +113,19 @@ class PersonBox extends Box {
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
             add(parent.drawParents());
             result.push(parent);
+            this._parents.push(parent);
             return parent;
         }
+
         var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
         var m: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
 
         if (d && m) {
             d.x = d.x - (d.width + BoxVerticalSpace)
             m.x = m.x + BoxVerticalSpace * 2;
-            console.log(d);
-            console.log(m);
-            this._lines.push(Line.lineTo(d, m, LineType.Partners));
+           // console.log(d);
+           // console.log(m);
+            d._lines.push( Line.lineTo(d, m, LineType.Partners));
         }
         this._lines.push(this.lineToParents([d, m]));
         return result;
@@ -132,7 +136,7 @@ class PersonBox extends Box {
         var elements = new Array<SVGElement>();
         var add = (item: any) => { if (item) elements.push(item); };
 
-        // Connection
+        // Connect all boxes
         for (var pbox of boxes) {
             for (var line of pbox._lines) {
                 if (!line) continue;
@@ -147,7 +151,7 @@ class PersonBox extends Box {
     }
 
     createBaseTree(): PersonBox[] {
-        this._familyLeft = this.x;
+        this._familyLeft = Math.max(this.x, this._leftLimit);
         var boxes = this.expandBaseTree();
         if (!boxes) return null;        
         return boxes;
@@ -157,7 +161,7 @@ class PersonBox extends Box {
 
         var result = new Array<PersonBox>();
         result.push(this);
-        this._familyLeft = this.x;
+        this._familyLeft = Math.max(this.x, this._leftLimit);
 
         var partnerBox = this.expandPartner();
         if (partnerBox) {
@@ -208,25 +212,33 @@ class PersonBox extends Box {
     }
 
     // Set position to all children and there families
-    private positionChildren(children: PersonBox[]): PersonBox[]
+    private positionChildren(): PersonBox[]
     {        
-        if (!children) return null;
+        if (!this._children) return null;
 
         var space = BoxHorizontalSpace * 2;
         var childrenWidth = 0;
         //console.log(this.person.firstName + "\tx:" + this.x + "\ty:" + this.y);
-        var c = Math.max(1, this.countNodes(children)-1);
+        var c = Math.max(1, this.countNodes(this._children)-1);
         var x = this.x - ((c * (this.width + space)) / 2);
         var y = this.y + this.height + space;
+        //console.log(this.name, this._leftLimit, x);
         //console.log(this.person.firstName + "\tc:" + c + "\tx:" + x + "\ty:" + y);
+        var leftLimit = this._leftLimit;
 
         var result = new Array<PersonBox>();
-        for (var child of children) {
-            child.x = x;
+        for (var child of this._children) {
             child.y = y;
+            child.x = Math.max(x, leftLimit);
+            child._leftLimit = leftLimit;
+
             var childsFamily = child.expandBaseTree();
-            x += child.familyWidth + space;
-            childrenWidth += child.familyWidth + space;            
+            var [left, right] = this.calculateFamilyWidth(child);
+            //console.log(child.name, child.x, x, left, right);
+            x = right + space; /// child.x + child.familyWidth + space;
+            leftLimit = x;
+            childrenWidth = right;//+=  child.familyWidth + space;     
+            child.familyWidth = right;
             childsFamily.forEach(f => result.push(f));
             //console.log("ch:" + child.person.firstName + "\t\tx,y,left,width:\t" + child.x + ",\t" + child.y + ",\t" + child.familyLeft + " \t" + child.familyWidth);            
         }
@@ -236,7 +248,17 @@ class PersonBox extends Box {
         return result;
     }
 
-
+    calculateFamilyWidth(pBox: PersonBox): [number, number] {
+        if (!pBox) return [0,0];
+        var left = pBox.x;
+        var right = pBox.x + pBox.width;
+        for (var child of pBox._children) {
+            var [l,r] = this.calculateFamilyWidth(child);
+            left = Math.min(left, l);
+            right = Math.max(right, r);
+        }
+        return [left, right];
+    }
 
     // Make space for partner
     expandPartner(): PersonBox {
@@ -253,11 +275,11 @@ class PersonBox extends Box {
         if (!this.person) return null;
         var children = this.person.marriageChildren;
         if (!children) return null;
-        var chBoxs = new Array<PersonBox>();
+
         for (var child of children) {
-            chBoxs.push(new PersonBox(child));
+            this._children.push(new PersonBox(child));
         }
-        return this.positionChildren(chBoxs);
+        return this.positionChildren();
     }
 
 
