@@ -89,38 +89,111 @@ class PersonBox extends Box {
         addBoxes(baseFamily);
         return result;
     }
-    drawParents() {
-        var result = new Array();
-        var add = (items) => { if (items)
-            items.forEach(i => result.push(i)); };
+    // return max boxes on one level
+    populateParents() {
+        let myParentThicknes = 0;
+        let partnrerParentThicknes = 0;
         var createParent = (p) => {
             if (!p)
                 return null;
-            var parent = new PersonBox(p);
-            parent._leftLimit = this.isMale ? Number.NEGATIVE_INFINITY : this.x;
-            parent._rightLimit = this.isMale ? this.x : Number.POSITIVE_INFINITY;
-            parent.x = this.isMale ? Math.max(this.x, parent._rightLimit) : Math.min(this.x, parent._leftLimit);
+            let parent = new PersonBox(p);
+            parent.x = this.x;
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
-            add(parent.drawParents());
-            result.push(parent);
             this._parents.push(parent);
+            let [a, b] = parent.populateParents();
+            myParentThicknes += a + b;
             return parent;
         };
         var d = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
         var m = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
         if (d && m) {
             d.expandPartner();
-            d._lines.push(Line.lineTo(d, m, LineType.Partners));
+            myParentThicknes++;
         }
-        this._lines.push(this.lineToParents([d, m]));
         // draw partners parents
         if (!this._partnerBox && this.person.marriedPartner) {
             this.expandPartner();
-            let partnerParents = this._partnerBox.drawParents();
-            this._lines.push(this._partnerBox.lineToParents(partnerParents));
-            //add(partnerParents);
+            let [c, d] = this._partnerBox.populateParents();
+            partnrerParentThicknes = c + d;
         }
+        return [myParentThicknes, partnrerParentThicknes];
+    }
+    drawParents() {
+        let [myParentThicknes, partnrerParentThicknes] = this.populateParents();
+        // Position box
+        let myParentsWidth = myParentThicknes * (this.width + BoxHorizontalSpace);
+        let partnerParentsWidth = partnrerParentThicknes * (this.width + BoxHorizontalSpace);
+        this.positonParents(myParentsWidth, this);
+        this.positonParents(partnerParentsWidth, this._partnerBox);
+        console.log(myParentsWidth, partnerParentsWidth, this._parents, this._partnerBox._parents);
+        // Draw connecting lines 
+        var result = new Array();
+        var add = (parents) => {
+            if (!parents || parents.length === 0)
+                return;
+            if (parents.length === 1) {
+                let p = parents.pop();
+                result.push(p);
+                add(p._parents);
+                return;
+            }
+            let m = parents.pop();
+            let d = parents.pop();
+            d._lines.push(Line.lineTo(d, m, LineType.Partners));
+            result.push(d);
+            result.push(m);
+            add(d._parents);
+            add(m._parents);
+        };
+        add(this._parents);
+        if (this._partnerBox) {
+            add(this._partnerBox._parents);
+            this._lines.push(this._partnerBox.lineToParents(this._partnerBox._parents));
+        }
+        //var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
+        //var m: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
+        //if (d && m) {
+        //    d.expandPartner();                    
+        //    d._lines.push( Line.lineTo(d, m, LineType.Partners));
+        //}
+        //this._lines.push(this.lineToParents([d, m]));
+        //// draw partners parents
+        //if (!this._partnerBox && this.person.marriedPartner) {
+        //    this.expandPartner();
+        //    let partnerParents = this._partnerBox.drawParents();
+        //    this._lines.push(this._partnerBox.lineToParents(partnerParents));
+        //    //add(partnerParents);
+        //}
         return result;
+    }
+    // place parents in middel of width
+    positonParents(width, _me) {
+        if (!_me)
+            return;
+        if (_me._parents.length === 0)
+            return;
+        if (_me._parents.length === 1) {
+            _me._parents[0].x = _me.x;
+            this.positonParents(width, _me._parents[0]);
+            _me._lines.push(_me.lineToParents(_me._parents));
+            return;
+        }
+        let dx = 0;
+        // dad
+        if (_me.isMale) {
+            dx = _me.x - width + _me.width + BoxHorizontalSpace;
+        }
+        else {
+            dx = _me.x - BoxHorizontalSpace;
+        }
+        let midDx = dx + (width / 2) - _me.width - BoxHorizontalSpace;
+        _me._parents[0].x = midDx;
+        console.log(_me._parents[0].name, _me.x, dx, midDx, width);
+        // mam
+        _me._parents[0].positionPartner(_me._parents[1]);
+        _me._lines.push(_me.lineToParents(_me._parents));
+        this.positonParents(width, _me._parents[0]);
+        this.positonParents(width, _me._parents[1]);
     }
     drawLines(boxes) {
         if (!boxes)
@@ -282,7 +355,11 @@ class PersonBox extends Box {
         }
         return i;
     }
+    toString() {
+        return this.name;
+    }
 }
+exports.PersonBox = PersonBox;
 class Line {
     static lineToChild(from, child) {
         var l = new Line();
@@ -344,4 +421,4 @@ class EventDispatcher {
     }
 }
 exports.EventDispatcher = EventDispatcher;
-//# sourceMappingURL=personBox.js.map
+//# sourceMappingURL=PersonBox.js.map

@@ -95,4 +95,4 @@ class Box {
             (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace));
     }
 }
-//# sourceMappingURL=box.js.map
+//# sourceMappingURL=Box.js.map

@@ -15,8 +15,7 @@
     <script href="src/box.js"></script>
     <script href="src/Relation.js"></script>
     <script href="src/Person.js"></script>
-    <script href="src/personBox.js"></script>
-    
+    <script href="src/personBox.js"></script>    
     <script type="text/ecmascript">
         <![CDATA[
         var dx = 0;
