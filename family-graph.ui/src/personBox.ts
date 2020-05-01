@@ -100,9 +100,9 @@ export class PersonBox extends Box {
         this.init();
         var result = new Array<SVGElement>();
         var add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
-        var addBoxes = (items: PersonBox[]) => { if (items) items.forEach(i => i.create(this).forEach(box => result.push(box))) }
-        var olds = this.drawParents();
+        var addBoxes = (items: PersonBox[]) => { if (items) items.forEach(i => i.create(this).forEach(box => result.push(box))) }        
         var baseFamily = this.createBaseTree();
+        var olds = this.drawParents();
         add(this.drawLines(baseFamily));
         add(this.drawLines(olds));
         addBoxes(olds);
@@ -122,7 +122,8 @@ export class PersonBox extends Box {
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
             this._parents.push(parent);
             let [a, b] = parent.populateParents();
-            myParentThicknes += a + b;
+            myParentThicknes += Math.max( a , b);
+            console.log(parent.name, a, b);
             return parent;
         }
         var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
@@ -137,19 +138,24 @@ export class PersonBox extends Box {
         if (!this._partnerBox && this.person.marriedPartner) {
             this.expandPartner();
             let [c, d] = this._partnerBox.populateParents();
-            partnrerParentThicknes = c + d;
+            partnrerParentThicknes = Math.max( c , d);
         }
         return [myParentThicknes, partnrerParentThicknes];
     }
 
     drawParents(): PersonBox[] {
-        let [myParentThicknes, partnrerParentThicknes] = this.populateParents();
-        // Position box
-        let myParentsWidth = myParentThicknes * (this.width + BoxHorizontalSpace);
+        let [myParentThicknes, partnrerParentThicknes] = [0, 0];
+        if (!this.isMale && this._partnerBox)
+            [partnrerParentThicknes, myParentThicknes] = this._partnerBox.populateParents();
+        else
+            [myParentThicknes, partnrerParentThicknes] = this.populateParents();
+
+       // Position box
+        let myParentsWidth = myParentThicknes * (this.width );
         let partnerParentsWidth = partnrerParentThicknes * (this.width + BoxHorizontalSpace);
         this.positonParents(myParentsWidth, this);
         this.positonParents(partnerParentsWidth, this._partnerBox);
-        console.log(myParentsWidth, partnerParentsWidth, this._parents, this._partnerBox._parents);
+        console.log(this.name, myParentThicknes, partnrerParentThicknes, myParentsWidth, partnerParentsWidth, this._parents, this._partnerBox ? this._partnerBox._parents : null);
         
         // Draw connecting lines 
         var result = new Array<PersonBox>();
@@ -363,10 +369,11 @@ export class PersonBox extends Box {
 
     // Make space for partner
     expandPartner() {
-        if (!this.person) return ;
-        var partner = this.person.marriedPartner;
-        if (!partner) return ;
-        this._partnerBox = new PersonBox(partner);
+        if (!this.person || !this.person.marriedPartner) return ;
+
+        if (!this._partnerBox) {
+            this._partnerBox = new PersonBox(this.person.marriedPartner);
+        }
         this._partnerBox._partnerBox = this;
         this.positionPartner(this._partnerBox);        
     }
