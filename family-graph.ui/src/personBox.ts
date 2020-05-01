@@ -111,19 +111,16 @@ export class PersonBox extends Box {
     }
 
     // return max boxes on one level
-    populateParents(): [number, number]{
+    populateParents(): number{
         let myParentThicknes = 0;
-        let partnrerParentThicknes = 0;
-
+        
         var createParent = (p: Person) => {
             if (!p) return null;
             let parent = new PersonBox(p);
             parent.x = this.x;
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
             this._parents.push(parent);
-            let [a, b] = parent.populateParents();
-            myParentThicknes += Math.max( a , b);
-            console.log(parent.name, a, b);
+            myParentThicknes += parent.populateParents();
             return parent;
         }
         var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
@@ -132,24 +129,15 @@ export class PersonBox extends Box {
         if (d && m) {
             d.expandPartner();
             myParentThicknes++;
-        }
-
-        // draw partners parents
-        if (!this._partnerBox && this.person.marriedPartner) {
-            this.expandPartner();
-            let [c, d] = this._partnerBox.populateParents();
-            partnrerParentThicknes = Math.max( c , d);
-        }
-        return [myParentThicknes, partnrerParentThicknes];
+        }        
+        return myParentThicknes;
     }
 
     drawParents(): PersonBox[] {
-        let [myParentThicknes, partnrerParentThicknes] = [0, 0];
-        if (!this.isMale && this._partnerBox)
-            [partnrerParentThicknes, myParentThicknes] = this._partnerBox.populateParents();
-        else
-            [myParentThicknes, partnrerParentThicknes] = this.populateParents();
+        let partnrerParentThicknes = 0;
+        let myParentThicknes = this.populateParents();
 
+        if (this._partnerBox) partnrerParentThicknes = this._partnerBox.populateParents();
        // Position box
         let myParentsWidth = myParentThicknes * (this.width );
         let partnerParentsWidth = partnrerParentThicknes * (this.width + BoxHorizontalSpace);
