@@ -89,11 +89,18 @@ export class PersonBox extends Box {
                 y: this.y + 40,
                 class: 'persons-name'
             });
-        text.textContent = this.name;
+        text.textContent = this.name + " x:" + this.x ;
+        var text2 = PathHelper.getNode('text',
+            {
+                x: this.x + 10,
+                y: this.y + 70,
+                class: 'persons-name'
+            });
+        text2.textContent = this._leftLimit + " : " + this._rightLimit;
 
         rect.addEventListener("click", () => { eventPb.boxSelected(this); });
         text.addEventListener("click", () => { eventPb.boxSelected(this); });
-        return [rect, text];
+        return [rect, text,text2];
     }
 
     startFromThisPersion(): SVGElement[] {
@@ -141,8 +148,8 @@ export class PersonBox extends Box {
        // Position box
         let myParentsWidth = myParentThicknes * (this.width );
         let partnerParentsWidth = partnrerParentThicknes * (this.width + BoxHorizontalSpace);
-        this.positonParents(myParentsWidth, this);
-        this.positonParents(partnerParentsWidth, this._partnerBox);
+        this.positonParents(myParentsWidth, this._partnerBox.x, this);
+        this.positonParents(partnerParentsWidth,this.x, this._partnerBox);
         console.log(this.name, myParentThicknes, partnrerParentThicknes, myParentsWidth, partnerParentsWidth, this._parents, this._partnerBox ? this._partnerBox._parents : null);
         
         // Draw connecting lines 
@@ -170,53 +177,73 @@ export class PersonBox extends Box {
             this._lines.push(this._partnerBox.lineToParents(this._partnerBox._parents));
         }
 
-
-        //var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
-        //var m: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
-
-        //if (d && m) {
-        //    d.expandPartner();                    
-        //    d._lines.push( Line.lineTo(d, m, LineType.Partners));
-        //}
-
-        //this._lines.push(this.lineToParents([d, m]));
-
-        //// draw partners parents
-        //if (!this._partnerBox && this.person.marriedPartner) {
-        //    this.expandPartner();
-        //    let partnerParents = this._partnerBox.drawParents();
-        //    this._lines.push(this._partnerBox.lineToParents(partnerParents));
-        //    //add(partnerParents);
-        //}
         return result;
     }
     // place parents in middel of width
-    positonParents(width: number, _me: PersonBox) {
+    positonParents(width: number, partnerX :number, _me: PersonBox) {
         if (!_me) return;
         if (_me._parents.length === 0) return;
-        if (_me._parents.length === 1) {
-            _me._parents[0].x = _me.x;
-            this.positonParents(width, _me._parents[0]);
-            _me._lines.push(_me.lineToParents(_me._parents));
-            return;
-        }
 
-        let dx = 0;
-        // dad
         if (_me.isMale) {
-            dx = _me.x - width + _me.width + BoxHorizontalSpace;
+            let rightX = Math.min(partnerX,  _me.x  );
+            this.setBounds(Number.NEGATIVE_INFINITY, rightX, _me._parents);
         } else {
-            dx = _me.x - BoxHorizontalSpace;
+            this.setBounds(_me.x, Number.POSITIVE_INFINITY, _me._parents);
         }
-        let midDx = dx + (width / 2) - _me.width - BoxHorizontalSpace;
-        _me._parents[0].x = midDx;
-        console.log(_me._parents[0].name, _me.x, dx, midDx, width);
-        // mam
-        _me._parents[0].positionPartner(_me._parents[1]);
-        _me._lines.push(_me.lineToParents(_me._parents));
+        
+        this.setX(_me);        
+        console.log(_me.name, _me.x, _me._parents[0]._leftLimit, _me._parents[0]._rightLimit, _me._parents[1]._leftLimit, _me._parents[1]._rightLimit)
+    }
 
-        this.positonParents(width, _me._parents[0]);
-        this.positonParents(width, _me._parents[1]);
+    setX(me: PersonBox) {
+        if (!me || me._parents.length === 0) return;
+
+        if (me._parents.length === 1) {
+            me._parents[0].x = me.x;
+        } else {
+            if (me.isMale) {
+                this.setBounds(me._leftLimit, Math.min(me.x + me.width, me._rightLimit), me._parents);
+            } else {
+                this.setBounds(Math.max(me.x, me._leftLimit), me._rightLimit, me._parents);
+            }
+            me._parents[0].x = me.x;
+            me._parents[0].positionPartner(me._parents[1]);
+        }
+        me._parents.forEach(p => this.setX(p));
+
+        let [dl, dr] = this.getParentBounds(me._parents[0]); //dad
+        this.setBounds(dl, dr, me._parents[0]._parents);
+
+        let [ml, mr] = this.getParentBounds(me._parents[1]); //mam
+        let newLeft = Math.max(ml, dr + BoxHorizontalSpace);
+        let newRight = newLeft + (mr - ml);
+        this.setBounds(newLeft, newRight, me._parents[1]._parents);
+
+        console.log(dl, dr, newLeft, newRight, me.name);
+
+        me._lines.push(me.lineToParents(me._parents));
+    }
+
+    getParentBounds(p: PersonBox): [number, number] {
+        if (!p) return [0, 0];
+        let [l, r] = [p.x, p.x + p.width];
+        if (p._parents.length === 0) return [l, r];
+
+        for (let a of p._parents) {
+            let [dl, dr] = this.getParentBounds(a);
+            l = Math.min(l, dl);
+            r = Math.max(r, dr);
+        }
+        return [l, r];
+    }
+
+    setBounds(left: number, right: number, parents: PersonBox[])  {
+        if (!parents || parents.length === 0) return;
+        for (let p of parents) {
+            p._leftLimit = left;
+            p._rightLimit = right;
+            this.setBounds(left, right, p._parents);
+        }
     }
 
     drawLines(boxes: Array<PersonBox>): Array<SVGElement> {

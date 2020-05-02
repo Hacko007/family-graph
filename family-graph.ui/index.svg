@@ -757,9 +757,10 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
         //let box = new PersonBox(p20); // adzo
         //let box= new PersonBox(p7); // cako
         //let box = new PersonBox(p24); // midzo nazim
-        let box = new PersonBox(p69); // dajo nazim
+        //let box = new PersonBox(p69); // dajo nazim
         //let box = new PersonBox(p39); // dedo jusuf
         //let box = new PersonBox(p48); // hala selima
+        let box = new PersonBox(p4); // mitko
         box.x = 600;
         box.y = 300;
         showThisPerson(box);
