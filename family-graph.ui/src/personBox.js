@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const MinLeft = -1000000;
+const MaxRight = 1000000;
 class PersonBox extends Box {
     constructor(person) {
         super();
-        this._leftLimit = -1000000;
-        this._rightLimit = 1000000;
+        this._leftLimit = MinLeft;
+        this._rightLimit = MaxRight;
         this._baseFamilyWidth = BoxWidth;
         this._familyLeft = 0;
         this._classFemale = "female-box";
@@ -31,29 +33,35 @@ class PersonBox extends Box {
         this._children = new Array();
         this._parents = new Array();
         this._lines = new Array();
+        this._partnerBox = null;
         this._onClickDispatcher = new EventDispatcher();
     }
-    get name() {
-        return this.person.fullName;
+    get name() { return this.person.fullName; }
+    get isMale() { return this._isMale; }
+    set isMale(value) { this._isMale = value; }
+    get dad() {
+        if (this._parents.length === 0)
+            return null;
+        for (let p of this._parents) {
+            if (p.isMale)
+                return p;
+        }
+        return null;
     }
-    get isMale() {
-        return this._isMale;
+    get mam() {
+        if (this._parents.length === 0)
+            return null;
+        for (let p of this._parents) {
+            if (!p.isMale)
+                return p;
+        }
+        return null;
     }
-    set isMale(value) {
-        this._isMale = value;
-    }
-    get familyLeft() {
-        return this._familyLeft;
-    }
-    updateLeft(x) {
-        this._familyLeft = Math.min(this._familyLeft, x);
-    }
-    get familyWidth() {
-        return this._baseFamilyWidth;
-    }
-    set familyWidth(value) {
-        this._baseFamilyWidth = value;
-    }
+    get partner() { return this._partnerBox; }
+    get familyLeft() { return this._familyLeft; }
+    get familyWidth() { return this._baseFamilyWidth; }
+    set familyWidth(value) { this._baseFamilyWidth = value; }
+    updateLeft(x) { this._familyLeft = Math.min(this._familyLeft, x); }
     create(eventPb) {
         var rect = PathHelper.getNode('rect', {
             x: this.x,
@@ -97,7 +105,6 @@ class PersonBox extends Box {
     }
     // return max boxes on one level
     populateParents() {
-        let myParentThicknes = 0;
         var createParent = (p) => {
             if (!p)
                 return null;
@@ -105,28 +112,37 @@ class PersonBox extends Box {
             parent.x = this.x;
             parent.y = this.y - (parent.height + (BoxHorizontalSpace * 2));
             this._parents.push(parent);
-            myParentThicknes += parent.populateParents();
+            parent.populateParents();
             return parent;
         };
         var d = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
         var m = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
         if (d && m) {
             d.expandPartner();
-            myParentThicknes++;
         }
-        return myParentThicknes;
     }
     drawParents() {
-        let partnrerParentThicknes = 0;
-        let myParentThicknes = this.populateParents();
-        if (this._partnerBox)
-            partnrerParentThicknes = this._partnerBox.populateParents();
+        this.populateParents();
+        if (this.partner)
+            this.partner.populateParents();
+        let levels = new Map([[0, ((this.partner) ? this.partner.x : this.x) + this.width]]);
         // Position box
-        let myParentsWidth = myParentThicknes * (this.width);
-        let partnerParentsWidth = partnrerParentThicknes * (this.width + BoxHorizontalSpace);
-        this.positonParents(myParentsWidth, this._partnerBox.x, this);
-        this.positonParents(partnerParentsWidth, this.x, this._partnerBox);
-        console.log(this.name, myParentThicknes, partnrerParentThicknes, myParentsWidth, partnerParentsWidth, this._parents, this._partnerBox ? this._partnerBox._parents : null);
+        var positonParents = (me) => {
+            if (!me)
+                return;
+            if (me._parents.length === 0)
+                return;
+            if (me.isMale) {
+                this.setBounds(Number.NEGATIVE_INFINITY, me.x, me._parents);
+            }
+            else {
+                this.setBounds(me.x, Number.POSITIVE_INFINITY, me._parents);
+            }
+            this.setX(me, 0, levels);
+        };
+        positonParents(this);
+        positonParents(this.partner);
+        console.log(this.name, this._parents, this.partner ? this.partner._parents : null);
         // Draw connecting lines 
         var result = new Array();
         var add = (parents) => {
@@ -147,53 +163,65 @@ class PersonBox extends Box {
             add(m._parents);
         };
         add(this._parents);
-        if (this._partnerBox) {
-            add(this._partnerBox._parents);
-            this._lines.push(this._partnerBox.lineToParents(this._partnerBox._parents));
+        if (this.partner) {
+            add(this.partner._parents);
+            this._lines.push(this.partner.lineToParents(this.partner._parents));
         }
         return result;
     }
-    // place parents in middel of width
-    positonParents(width, partnerX, _me) {
-        if (!_me)
-            return;
-        if (_me._parents.length === 0)
-            return;
-        if (_me.isMale) {
-            let rightX = Math.min(partnerX, _me.x);
-            this.setBounds(Number.NEGATIVE_INFINITY, rightX, _me._parents);
-        }
-        else {
-            this.setBounds(_me.x, Number.POSITIVE_INFINITY, _me._parents);
-        }
-        this.setX(_me);
-        console.log(_me.name, _me.x, _me._parents[0]._leftLimit, _me._parents[0]._rightLimit, _me._parents[1]._leftLimit, _me._parents[1]._rightLimit);
-    }
-    setX(me) {
+    setX(me, level, levels) {
         if (!me || me._parents.length === 0)
             return;
         if (me._parents.length === 1) {
             me._parents[0].x = me.x;
+            levels.set(level + 1, me.x + me.width);
         }
         else {
             if (me.isMale) {
-                this.setBounds(me._leftLimit, Math.min(me.x + me.width, me._rightLimit), me._parents);
+                this.setBounds(me._leftLimit, me.x, me._parents);
             }
             else {
-                this.setBounds(Math.max(me.x, me._leftLimit), me._rightLimit, me._parents);
+                this.setBounds(me.x, me._rightLimit, me._parents);
             }
-            me._parents[0].x = me.x;
-            me._parents[0].positionPartner(me._parents[1]);
+            let lr = levels.has(level) ? levels.get(level) : me.x;
+            me.dad.x = Math.max(me.x, lr);
+            me.dad.positionPartner(me.mam);
+            this.setLevel(level + 1, me.mam.x + me.width + (BoxHorizontalSpace * 2), levels);
+            console.log(level, levels, lr, me.name);
         }
-        me._parents.forEach(p => this.setX(p));
-        let [dl, dr] = this.getParentBounds(me._parents[0]); //dad
-        this.setBounds(dl, dr, me._parents[0]._parents);
-        let [ml, mr] = this.getParentBounds(me._parents[1]); //mam
+        me._parents.forEach(p => this.setX(p, level + 1, levels));
+        let [dl, dr] = this.getParentBounds(me.dad); //dad        
+        this.setBounds(dl, dr, me.dad._parents);
+        let [ml, mr] = this.getParentBounds(me.mam); //mam
         let newLeft = Math.max(ml, dr + BoxHorizontalSpace);
         let newRight = newLeft + (mr - ml);
-        this.setBounds(newLeft, newRight, me._parents[1]._parents);
-        console.log(dl, dr, newLeft, newRight, me.name);
+        this.setBounds(newLeft, newRight, me.mam._parents);
+        // me._parents.forEach(p => this.ajustParents(p));
+        ///console.log(dl, dr, newLeft, newRight, me.name);
         me._lines.push(me.lineToParents(me._parents));
+    }
+    setLevel(lev, r, levels) {
+        if (levels.has(lev)) {
+            let oldR = levels.get(lev);
+            levels.set(lev, Math.max(r, oldR));
+        }
+        else {
+            levels.set(lev, r);
+        }
+    }
+    ajustParents(me) {
+        if (!me)
+            return;
+        me.x = Math.max(me.x, me._leftLimit === MinLeft ? me.x : me._leftLimit);
+        if (me.partner) {
+            me.positionPartner(me.partner);
+            for (let p of me.partner._parents) {
+                this.ajustParents(p);
+            }
+        }
+        for (let p of me._parents) {
+            this.ajustParents(p);
+        }
     }
     getParentBounds(p) {
         if (!p)
@@ -286,7 +314,7 @@ class PersonBox extends Box {
             return;
         var space = BoxHorizontalSpace * 2;
         partner.y = this.y;
-        let rghLimit = this._rightLimit - this.width - space;
+        let rghLimit = this._rightLimit - space;
         rghLimit -= this.isMale ? this.width : 0;
         this.x = Math.min(this.x, rghLimit);
         this.x = Math.max(this.x, this._leftLimit);
