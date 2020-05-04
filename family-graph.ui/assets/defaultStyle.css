@@ -29,3 +29,10 @@
     stroke: darkgreen;
     stroke-width: 4px;
 }
+
+
+.grid {
+    fill: none;
+    stroke: lightgray;
+    stroke-width: 1px;
+}
