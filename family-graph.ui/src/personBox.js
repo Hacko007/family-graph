@@ -128,6 +128,7 @@ class PersonBox extends Box {
         var d = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
         var m = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
         if (d && m) {
+            d._partnerBox = m;
             m._partnerBox = d;
             d.expandPartner();
         }

@@ -34,11 +34,11 @@ class Box {
     set width(value) {
         this._width = value;
     }
-    get style() {
-        return this._style;
+    get class() {
+        return this._class;
     }
-    set style(value) {
-        this._style = value;
+    set class(value) {
+        this._class = value;
     }
     connectTo(boxes) {
         var lines = new Array();

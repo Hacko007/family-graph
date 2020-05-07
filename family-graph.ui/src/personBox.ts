@@ -155,6 +155,7 @@ export class PersonBox extends Box {
         var m: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.mam) : null;
 
         if (d && m) {
+            d._partnerBox = m;
             m._partnerBox = d;
             d.expandPartner();
         }
@@ -234,7 +235,7 @@ export class PersonBox extends Box {
             }
 
             let  leftSiblingEnd = levels.has(level) ? levels.get(level) :  me.x;            
-            me.dad.x = Math.max(me.x, leftSiblingEnd);
+            me.dad.x = Math.max(me.x, leftSiblingEnd );
             me.dad.positionPartner();
             this.setLevel(level + 1 , me.mam, levels);
             console.log(level, levels, leftSiblingEnd, me.name);
@@ -249,10 +250,7 @@ export class PersonBox extends Box {
         let newLeft = Math.max(ml, dr + BoxHorizontalSpace);
         let newRight = newLeft + (mr - ml);
         this.setBounds(newLeft, newRight, me.mam._parents);
-       // me._parents.forEach(p => this.ajustParents(p));
-
-        
-        ///console.log(dl, dr, newLeft, newRight, me.name);
+       
 
         me._lines.push(me.lineToParents(me._parents));
     }
@@ -266,15 +264,7 @@ export class PersonBox extends Box {
             levels.set(lev, x);
         }
     }
-    //ajustParents(me: PersonBox) {
-    //    if (!me) return;
-    //    me.x = Math.max(me.x, me._leftLimit === MinLeft ? me.x : me._leftLimit);
-    //    if (me.partner) {
-    //        me.positionPartner();
-    //        for (let p of me.partner._parents) { this.ajustParents(p); }
-    //    }
-    //    for (let p of me._parents) { this.ajustParents(p); }        
-    //}
+    
 
     getParentBounds(p: PersonBox): [number, number] {
         if (!p) return [0, 0];
