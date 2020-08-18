@@ -765,13 +765,13 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
         let box = new PersonBox(p4); // mitko
         //let box = new PersonBox(p5); // meliha
         //let box = new PersonBox(p297); // emir
-        box.x = 300;
+        box.x = 0;
         box.y = 800;
         showThisPerson(box);
         pan(box.familyLeft + 10, 0);
         zoom(0.6);
-        console.log( Find.findLeftestParent(box).person);
-        console.log( Find.findRightestParent(box).person);
+        console.log( Find.findLeftestParent(box));
+        console.log( Find.findRightestParent(box));
        }
        
       function showThisPerson(box){

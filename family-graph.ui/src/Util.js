@@ -7,8 +7,8 @@ class Position {
         let leftestParent = Find.findLeftestParent(child);
         if (!leftestParent)
             return;
-        leftestParent.x = child.x;
-        this.setPositionStartingFrom(leftestParent, child);
+        leftestParent.person.x = child.x;
+        this.setPositionStartingFrom(leftestParent.person, child);
     }
     static setPositionStartingFrom(start, stop) {
         if (!start)
@@ -49,32 +49,32 @@ class Position {
 }
 class Find {
     static findRightestParent(child) {
-        let f = this.findRightestParentInternal(new PersonDepth(child, 0));
-        return (f) ? f.person : null;
+        let f = this.findRightestParentDepth(new PersonDepth(child, 0));
+        return (f) ? f : null;
     }
-    static findRightestParentInternal(child) {
+    static findRightestParentDepth(child) {
         if (!child)
             return null;
         if (!child.person)
             return null;
         let hasBothParents = child.person.dad && child.person.dad;
-        let dad = this.findRightestParentInternal(new PersonDepth(child.person.dad, hasBothParents ? (child.depth - 1) : child.depth));
-        let mam = this.findRightestParentInternal(new PersonDepth(child.person.mam, hasBothParents ? (child.depth + 1) : child.depth));
+        let dad = this.findRightestParentDepth(new PersonDepth(child.person.dad, hasBothParents ? (child.depth - 1) : child.depth));
+        let mam = this.findRightestParentDepth(new PersonDepth(child.person.mam, hasBothParents ? (child.depth + 1) : child.depth));
         let final = (mam && mam.depth > dad.depth) ? mam : dad;
         return (final && child.depth <= final.depth) ? final : child;
     }
     static findLeftestParent(child) {
-        let f = this.findLeftestParentInternal(new PersonDepth(child, 0));
-        return (f) ? f.person : null;
+        let f = this.findLeftestParentDepth(new PersonDepth(child, 0));
+        return (f) ? f : null;
     }
-    static findLeftestParentInternal(child) {
+    static findLeftestParentDepth(child) {
         if (!child)
             return null;
         if (!child.person)
             return null;
         let hasBothParents = child.person.dad && child.person.dad;
-        let dad = this.findLeftestParentInternal(new PersonDepth(child.person.dad, hasBothParents ? (child.depth - 1) : child.depth));
-        let mam = this.findLeftestParentInternal(new PersonDepth(child.person.mam, hasBothParents ? (child.depth + 1) : child.depth));
+        let dad = this.findLeftestParentDepth(new PersonDepth(child.person.dad, hasBothParents ? (child.depth - 1) : child.depth));
+        let mam = this.findLeftestParentDepth(new PersonDepth(child.person.mam, hasBothParents ? (child.depth + 1) : child.depth));
         let final = (dad && dad.depth <= mam.depth) ? dad : mam;
         return (final && child.depth > final.depth) ? final : child;
     }
