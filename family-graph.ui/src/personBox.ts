@@ -70,7 +70,12 @@ export class PersonBox extends Box {
         }
         return null;
     }
-
+    get hasBothParents(): boolean {
+        return (this.mam && this.dad) ? true : false;;
+    }
+    get hasOnlyOneParents(): boolean {
+        return this._parents.length === 1;
+    }
     get partner(): PersonBox { return this._partnerBox; }
 
     get familyLeft(): number { return this._familyLeft; }

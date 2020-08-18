@@ -16,6 +16,7 @@
     <script href="src/Relation.js"></script>
     <script href="src/Person.js"></script>
     <script href="src/personBox.js"></script>    
+    <script href="src/Util.js"></script>
     <script type="text/ecmascript">
         <![CDATA[
         var dx = 0;
@@ -761,13 +762,16 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
         ///let box = new PersonBox(p43); // dajo huzair
         //let box = new PersonBox(p39); // dedo jusuf
         //let box = new PersonBox(p48); // hala selima
-        //let box = new PersonBox(p4); // mitko
-        let box = new PersonBox(p297); // emir
+        let box = new PersonBox(p4); // mitko
+        //let box = new PersonBox(p5); // meliha
+        //let box = new PersonBox(p297); // emir
         box.x = 300;
         box.y = 800;
         showThisPerson(box);
         pan(box.familyLeft + 10, 0);
         zoom(0.6);
+        console.log( Find.findLeftestParent(box).person);
+        console.log( Find.findRightestParent(box).person);
        }
        
       function showThisPerson(box){

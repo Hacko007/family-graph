@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EventDispatcher = exports.PersonBox = void 0;
 const MinLeft = -1000000;
 const MaxRight = 1000000;
 class PersonBox extends Box {
@@ -58,6 +59,13 @@ class PersonBox extends Box {
                 return p;
         }
         return null;
+    }
+    get hasBothParents() {
+        return (this.mam && this.dad) ? true : false;
+        ;
+    }
+    get hasOnlyOneParents() {
+        return this._parents.length === 1;
     }
     get partner() { return this._partnerBox; }
     get familyLeft() { return this._familyLeft; }
@@ -218,8 +226,6 @@ class PersonBox extends Box {
         let newLeft = Math.max(ml, dr + BoxHorizontalSpace);
         let newRight = newLeft + (mr - ml);
         this.setBounds(newLeft, newRight, me.mam._parents);
-        // me._parents.forEach(p => this.ajustParents(p));
-        ///console.log(dl, dr, newLeft, newRight, me.name);
         me._lines.push(me.lineToParents(me._parents));
     }
     setLevel(lev, me, levels) {
@@ -232,15 +238,6 @@ class PersonBox extends Box {
             levels.set(lev, x);
         }
     }
-    //ajustParents(me: PersonBox) {
-    //    if (!me) return;
-    //    me.x = Math.max(me.x, me._leftLimit === MinLeft ? me.x : me._leftLimit);
-    //    if (me.partner) {
-    //        me.positionPartner();
-    //        for (let p of me.partner._parents) { this.ajustParents(p); }
-    //    }
-    //    for (let p of me._parents) { this.ajustParents(p); }        
-    //}
     getParentBounds(p) {
         if (!p)
             return [0, 0];

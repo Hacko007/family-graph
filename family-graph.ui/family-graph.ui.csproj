@@ -11,6 +11,7 @@
     <None Remove="src\Person.ts" />
     <None Remove="src\personBox.ts" />
     <None Remove="src\Relation.ts" />
+    <None Remove="src\Util.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <TypeScriptCompile Include="src\Person.ts" />
     <TypeScriptCompile Include="src\PersonBox.ts" />
     <TypeScriptCompile Include="src\Relation.ts" />
+    <TypeScriptCompile Include="src\Util.ts" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
