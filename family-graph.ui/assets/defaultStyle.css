@@ -5,6 +5,11 @@
     color: black;
 }
 
+.debug {
+    font-size: 20px;
+    color: darkred;
+}
+
 
 .unknown-box {
     fill: darkgrey;

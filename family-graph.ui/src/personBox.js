@@ -6,6 +6,7 @@ const MaxRight = 1000000;
 class PersonBox extends Box {
     constructor(person) {
         super();
+        this.debugging = false;
         this._leftLimit = MinLeft;
         this._rightLimit = MaxRight;
         this._baseFamilyWidth = BoxWidth;
@@ -84,37 +85,47 @@ class PersonBox extends Box {
         });
         var text = PathHelper.getNode('text', {
             x: this.x + 10,
-            y: this.y + 40,
+            y: this.y + 30,
             class: 'persons-name'
         });
-        text.textContent = this.name + " x:" + this.x;
+        text.textContent = this.name;
         rect.addEventListener("click", () => { eventPb.boxSelected(this); });
         text.addEventListener("click", () => { eventPb.boxSelected(this); });
+        if (!this.debugging)
+            return [rect, text];
+        //add debug info
         var text2 = PathHelper.getNode('text', {
             x: this.x + 10,
             y: this.y + 70,
-            class: 'persons-name'
+            class: 'debug'
         });
-        text2.textContent = this._leftLimit + " : " + this._rightLimit;
-        text2.addEventListener("click", () => { eventPb.boxSelected(this); });
-        return [rect, text, text2];
+        text2.textContent = "X: " + this.x;
+        var text3 = PathHelper.getNode('text', {
+            x: this.x + 10,
+            y: this.y + 90,
+            class: 'debug'
+        });
+        text3.textContent = "L: " + this._leftLimit + "  - R: " + this._rightLimit;
+        return [rect, text, text2, text3];
     }
     startFromThisPersion() {
         this.init();
         var result = new Array();
-        var add = (items) => { if (items)
+        const add = (items) => { if (items)
             items.forEach(i => result.push(i)); };
-        var addBoxes = (items) => { if (items)
+        const addBoxes = (items) => { if (items)
             items.forEach(i => i.create(this).forEach(box => result.push(box))); };
-        //Help grid
-        for (let x = -1000; x < 3100; x += 50) {
-            for (let y = 0; y < 3100; y += 200) {
-                result.push(PathHelper.drawSimpleLine(x, y, -x, y));
-                result.push(PathHelper.drawSimpleLine(x, -y, x, y));
+        if (this.debugging) {
+            //Help grid
+            for (let x = -1000; x < 3100; x += 50) {
+                for (let y = 0; y < 3100; y += 200) {
+                    result.push(PathHelper.drawSimpleLine(x, y, -x, y));
+                    result.push(PathHelper.drawSimpleLine(x, -y, x, y));
+                }
             }
         }
-        var baseFamily = this.createBaseTree();
-        var olds = this.drawParents();
+        const baseFamily = this.createBaseTree();
+        const olds = (this.partner && this.partner.isMale) ? this.partner.drawParents() : this.drawParents();
         add(this.drawLines(baseFamily));
         add(this.drawLines(olds));
         addBoxes(olds);
@@ -147,14 +158,14 @@ class PersonBox extends Box {
             this.partner.populateParents();
         let levels = new Map([[0, ((this.partner) ? this.partner.x : this.x) + this.width]]);
         // Position box
-        var positonParents = (me) => {
+        const positionParents = (me) => {
             if (!me)
                 return;
             if (me._parents.length === 0)
                 return;
             if (me.partner) {
                 if (me.isMale) {
-                    this.setBounds(Number.NEGATIVE_INFINITY, me.x, me._parents);
+                    this.setBounds(Number.NEGATIVE_INFINITY, me.x + me.width, me._parents);
                 }
                 else {
                     this.setBounds(me.x, Number.POSITIVE_INFINITY, me._parents);
@@ -162,8 +173,8 @@ class PersonBox extends Box {
             }
             this.setX(me, 0, levels);
         };
-        positonParents(this);
-        positonParents(this.partner);
+        positionParents(this);
+        positionParents(this.partner);
         console.log(this.name, this._parents, this.partner ? this.partner._parents : null);
         // Draw connecting lines 
         var result = new Array();
@@ -171,13 +182,13 @@ class PersonBox extends Box {
             if (!parents || parents.length === 0)
                 return;
             if (parents.length === 1) {
-                let p = parents[0];
+                const p = parents[0];
                 result.push(p);
                 add(p._parents);
                 return;
             }
-            let d = parents[0];
-            let m = parents[1];
+            const d = parents[0];
+            const m = parents[1];
             d._lines.push(Line.lineTo(d, m, LineType.Partners));
             result.push(d);
             result.push(m);
@@ -201,14 +212,13 @@ class PersonBox extends Box {
         else {
             if (me.partner) {
                 if (me.isMale) {
-                    this.setBounds(me._leftLimit, me.x, me._parents);
+                    this.setBounds(me._leftLimit, me.x + me.width, me._parents);
                 }
                 else {
                     this.setBounds(me.x, me._rightLimit, me._parents);
                 }
             }
             if (me._parents.length === 0) {
-                me.positionPartner();
                 this.setLevel(level, me, levels);
                 console.log(level, levels, levels.get(level), me.name, "no parents");
                 return;
@@ -257,14 +267,15 @@ class PersonBox extends Box {
         for (let p of parents) {
             p._leftLimit = left;
             p._rightLimit = right;
-            if (p.x < left) {
+            if (p.x > left) {
                 console.log(p.name, p.x, left, "left");
-                p.x = left;
+                //p.x = left;
             }
-            if (p.x > right) {
+            if (p.x < right) {
                 console.log(p.name, p.x, right, "right");
-                p.x = right;
+                //p.x = right;
             }
+            p.positionPartner();
             this.setBounds(left, right, p._parents);
         }
     }
@@ -335,7 +346,7 @@ class PersonBox extends Box {
     positionPartner() {
         let space = BoxHorizontalSpace;
         let rghLimit = this._rightLimit - space - this.width;
-        if (!this.partner) {
+        if (!this.partner) { // no partner
             this.x = Math.min(this.x, rghLimit);
             this.x = Math.max(this.x, this._leftLimit);
             return;
