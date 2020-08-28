@@ -781,7 +781,7 @@ var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
               startBox.onClick.unregister(e=>{showThisPerson(e)});
             }
             mapMatrix.innerHTML ='';
-            var v = box.startFromThisPersion();
+            var v = box.startFromThisPerson();
             box.onClick.register(b => {showThisPerson(b)});
             v.forEach(e => mapMatrix.appendChild(e)); 
             startBox = box;

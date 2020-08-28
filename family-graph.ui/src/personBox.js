@@ -6,9 +6,10 @@ const MaxRight = 1000000;
 class PersonBox extends Box {
     constructor(person) {
         super();
-        this.debugging = false;
+        this.debugging = true;
         this._leftLimit = MinLeft;
         this._rightLimit = MaxRight;
+        this.isStartingPerson = false;
         this._baseFamilyWidth = BoxWidth;
         this._familyLeft = 0;
         this._classFemale = "female-box";
@@ -108,8 +109,11 @@ class PersonBox extends Box {
         text3.textContent = "L: " + this._leftLimit + "  - R: " + this._rightLimit;
         return [rect, text, text2, text3];
     }
-    startFromThisPersion() {
+    startFromThisPerson() {
         this.init();
+        this.isStartingPerson = true;
+        if (this.partner)
+            this.partner.isStartingPerson = true;
         var result = new Array();
         const add = (items) => { if (items)
             items.forEach(i => result.push(i)); };
@@ -142,6 +146,7 @@ class PersonBox extends Box {
             parent.y = this.y - (parent.height + (BoxVerticalSpace));
             this._parents.push(parent);
             parent.populateParents();
+            parent._children.push(this);
             return parent;
         };
         var d = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
@@ -265,19 +270,66 @@ class PersonBox extends Box {
         if (right < left)
             right = left;
         for (let p of parents) {
+            let adjustChild = false;
             p._leftLimit = left;
             p._rightLimit = right;
-            if (p.x > left) {
-                console.log(p.name, p.x, left, "left");
+            if (left > p.x || p.x > right) {
+                console.log(p.name, "L:", left, " < x:", p.x, " < R:", right, (left > p.x ? "left" : "right"));
                 //p.x = left;
+                adjustChild = true;
             }
-            if (p.x < right) {
-                console.log(p.name, p.x, right, "right");
-                //p.x = right;
-            }
+            //if () {
+            //    console.log(p.name, "L:", left, " < x:", p.x, " < R:", right, "right");
+            //     //p.x = right;
+            //}
+            //TODO dodaj dijete u listu za svakog roditelja
             p.positionPartner();
+            if (adjustChild)
+                p.adjustChildren();
             this.setBounds(left, right, p._parents);
         }
+    }
+    adjustChildren() {
+        let child = this.getChildInTree();
+        if (!child || child.isStartingPerson)
+            return;
+        if (child.isMale)
+            console.log("Adjust x:", child.x, child.name, "m.x:", child.mam.x, child.mam.name);
+        else
+            console.log("Adjust x:", child.x, child.name, "d.x:", child.dad.x, child.dad.name);
+        if (child.isMale && child.mam && child.x > child.mam.x) {
+            child.x = child.mam.x;
+        }
+        else if (child.isMale && child.dad && !child.mam && child.x > child.dad.x) {
+            child.x = child.dad.x;
+        }
+        else if (!child.isMale && child.dad && child.x > child.dad.x) {
+            child.x = child.dad.x;
+        }
+        else if (!child.isMale && !child.dad && child.mam && child.x > child.mam.x) {
+            child.x = child.mam.x;
+        }
+        else {
+            return;
+        }
+        child.positionPartner();
+        child.adjustChildren();
+        if (child.isMale)
+            console.log("Adjust end x:", child.x, child.name, "m.x:", child.mam.x, child.mam.name);
+        else
+            console.log("Adjust end x:", child.x, child.name, "d.x:", child.dad.x, child.dad.name);
+    }
+    //Get child that is in visible in this tree
+    getChildInTree() {
+        if (!this._children || this._children.length === 0)
+            return null;
+        for (var ch of this._children) {
+            if (ch.isStartingPerson)
+                return ch;
+            if (ch.getChildInTree())
+                return ch;
+        }
+        return null;
     }
     drawLines(boxes) {
         if (!boxes)
@@ -345,7 +397,7 @@ class PersonBox extends Box {
     // Set position for partner
     positionPartner() {
         let space = BoxHorizontalSpace;
-        let rghLimit = this._rightLimit - space - this.width;
+        let rghLimit = this._rightLimit - space - (this.width);
         if (!this.partner) { // no partner
             this.x = Math.min(this.x, rghLimit);
             this.x = Math.max(this.x, this._leftLimit);

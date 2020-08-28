@@ -3,7 +3,7 @@ const MaxRight = 1000000;
 
 export class PersonBox extends Box {
 
-    public debugging: boolean = false;
+    public debugging: boolean = true;
 
     public _lines: Array<Line>;
     public _children: Array<PersonBox>;
@@ -11,6 +11,7 @@ export class PersonBox extends Box {
     public _rightLimit: number = MaxRight;
     public _parents: Array<PersonBox>;
 
+    private isStartingPerson: boolean = false;
     private person: Person;
     private _baseFamilyWidth: number = BoxWidth;
     private _familyLeft: number = 0;
@@ -18,7 +19,6 @@ export class PersonBox extends Box {
     private _classFemale: string = "female-box";
     private _classMale: string = "male-box";
     private _onClickDispatcher: EventDispatcher<PersonBox> = new EventDispatcher<PersonBox>();
-    
     private _partnerBox: PersonBox;
 
     get onClick(): Event<PersonBox> {
@@ -132,8 +132,11 @@ export class PersonBox extends Box {
         return [rect, text,text2,text3];
     }
 
-    startFromThisPersion(): SVGElement[] {
+    startFromThisPerson(): SVGElement[] {
         this.init();
+        this.isStartingPerson = true;
+        if (this.partner) this.partner.isStartingPerson = true;
+
         var result = new Array<SVGElement>();
         const add = (items: any[]) => { if (items) items.forEach(i => result.push(i)) };
         const addBoxes = (items: PersonBox[]) => { if (items) items.forEach(i => i.create(this).forEach(box => result.push(box))) };
@@ -147,8 +150,6 @@ export class PersonBox extends Box {
                 }
             }
         }
-
-
         const baseFamily = this.createBaseTree();
         const olds = (this.partner && this.partner.isMale) ? this.partner.drawParents() :  this.drawParents();
         add(this.drawLines(baseFamily));
@@ -168,6 +169,7 @@ export class PersonBox extends Box {
             parent.y = this.y - (parent.height + (BoxVerticalSpace ));
             this._parents.push(parent);
             parent.populateParents();
+            parent._children.push(this);
             return parent;
         }
         var d: PersonBox = this.person.parents !== undefined ? createParent(this.person.parents.dad) : null;
@@ -260,7 +262,6 @@ export class PersonBox extends Box {
             this.setLevel(level , me, levels);
             console.log(level, levels, leftSiblingEnd, me.name);
         }
-        
         me._parents.forEach(p => this.setX(p, level + 1, levels));
         
         me._lines.push(me.lineToParents(me._parents));
@@ -276,10 +277,7 @@ export class PersonBox extends Box {
             levels.set(lev, x);
             if (lev === 4) console.log(x, me.name);
         }
-
-        
     }
-    
 
     getParentBounds(p: PersonBox): [number, number] {
         if (!p) return [0, 0];
@@ -299,19 +297,56 @@ export class PersonBox extends Box {
         if (right < left) right = left;
 
         for (let p of parents) {
+            let adjustChild = false;
             p._leftLimit = left;
             p._rightLimit = right;
-            if (p.x > left) {
-                console.log(p.name,p.x,left ,"left");
-                //p.x = left;
-            }
-            if (p.x < right) {
-                console.log(p.name, p.x, right, "right");
-                 //p.x = right;
+            if (left > p.x || p.x > right) {
+                console.log(p.name, "L:", left, " < x:", p.x, " < R:", right, (left > p.x ? "left": "right"));
+                adjustChild = true;
             }
             p.positionPartner();
+            if(adjustChild) p.adjustChildren();
             this.setBounds(left, right, p._parents);
         }
+    }
+
+    adjustChildren() {
+        let child = this.getChildInTree();
+        if (!child || child.isStartingPerson) return;
+        if(child.isMale)
+            console.log("Adjust x:", child.x, child.name, "m.x:", child.mam.x, child.mam.name);
+        else
+            console.log("Adjust x:", child.x, child.name, "d.x:", child.dad.x, child.dad.name);
+
+        if (child.isMale && child.mam && child.x > child.mam.x) {
+            child.x = child.mam.x;
+        } else if (child.isMale && child.dad && !child.mam && child.x > child.dad.x) {
+            child.x = child.dad.x;
+        }else if (!child.isMale && child.dad && child.x > child.dad.x) {
+            child.x = child.dad.x;
+        } else if (!child.isMale && !child.dad && child.mam && child.x > child.mam.x) {
+            child.x = child.mam.x;
+        } else {
+            return;
+        }
+
+        child.positionPartner();
+        child.adjustChildren();
+
+        if (child.isMale)
+            console.log("Adjust end x:", child.x, child.name, "m.x:", child.mam.x, child.mam.name);
+        else
+            console.log("Adjust end x:", child.x, child.name, "d.x:", child.dad.x, child.dad.name);
+    }
+
+    //Get child that is in visible in this tree
+    getChildInTree(): PersonBox {
+        if (!this._children || this._children.length === 0) return null;
+        for (var ch of this._children) {
+            if (ch.isStartingPerson) return ch;
+            if (ch.getChildInTree()) return ch;
+        }
+        return null;
     }
 
     drawLines(boxes: Array<PersonBox>): Array<SVGElement> {
@@ -382,7 +417,7 @@ export class PersonBox extends Box {
     // Set position for partner
     positionPartner() {
         let space = BoxHorizontalSpace ;
-        let rghLimit = this._rightLimit - space - this.width;
+        let rghLimit = this._rightLimit - space - (this.width);
 
         if (!this.partner) { // no partner
             this.x = Math.min(this.x, rghLimit);
