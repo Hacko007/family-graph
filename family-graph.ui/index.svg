@@ -15,15 +15,19 @@
     <script href="src/box.js"></script>
     <script href="src/Relation.js"></script>
     <script href="src/Person.js"></script>
-    <script href="src/personBox.js"></script>
-    <script href="src/EventDispatcher.js"></script>
+    <script href="src/personBox.js"></script>    
+    <script href="src/Util.js"></script>
     <script type="text/ecmascript">
         <![CDATA[
         var dx = 0;
         var dy = 0;
         var transMatrix = [1, 0, 0, 1, 0, 0];
         var mapMatrix;
-
+        var startBox ;
+        
+        
+         
+        
         function init() {
 
         window.addEventListener("mousedown", mousedown_listener, false);
@@ -751,23 +755,38 @@ var r596 = new Relation(p596, p72, null); r596.addChildren({ p597 });
 var r601 = new Relation(p601, p225, null); r601.addChildren({ p602 });
 var r603 = new Relation(p603, p285, null); r603.addChildren({ p604,p605 });
 
-        // let box = new PersonBox(p20); // adzo
-        //let box = new PersonBox(p7); // cako
-        let box = new PersonBox(p24); // midzo nazim
-        box.x = 600;
-        box.y = 300;
-        //box.onClick().register(i => {alert(i)});
-        var v = box.startFromThisPersion();
-        v.forEach(e => mapMatrix.appendChild(e));
-
-        //console.log(box.familyLeft);
-
+        //let box = new PersonBox(p20); // adzo
+        //let box= new PersonBox(p7); // cako
+        //let box = new PersonBox(p24); // midzo nazim
+        //let box = new PersonBox(p69); // dajo nazim
+        ///let box = new PersonBox(p43); // dajo huzair
+        //let box = new PersonBox(p39); // dedo jusuf
+        //let box = new PersonBox(p48); // hala selima
+        let box = new PersonBox(p4); // mitko
+        //let box = new PersonBox(p5); // meliha
+        //let box = new PersonBox(p297); // emir
+        box.x = 0;
+        box.y = 800;
+        showThisPerson(box);
         pan(box.familyLeft + 10, 0);
-
-
+        zoom(0.6);
+        console.log( Find.findLeftestParent(box));
+        console.log( Find.findRightestParent(box));
+       }
+       
+      function showThisPerson(box){
+            if(startBox && box && startBox.person.id === box.person.id) return;
+            if(startBox && box && box.partner && startBox.person.id === box.partner.person.id) return;
+            if(startBox){
+              startBox.onClick.unregister(e=>{showThisPerson(e)});
+            }
+            mapMatrix.innerHTML ='';
+            var v = box.startFromThisPerson();
+            box.onClick.register(b => {showThisPerson(b)});
+            v.forEach(e => mapMatrix.appendChild(e)); 
+            startBox = box;
         }
-
-
+       
 
         function pan(dx, dy) {
           try {

@@ -5,6 +5,11 @@
     color: black;
 }
 
+.debug {
+    font-size: 20px;
+    color: darkred;
+}
+
 
 .unknown-box {
     fill: darkgrey;
@@ -28,4 +33,11 @@
     fill: none;
     stroke: darkgreen;
     stroke-width: 4px;
+}
+
+
+.grid {
+    fill: none;
+    stroke: lightgray;
+    stroke-width: 1px;
 }

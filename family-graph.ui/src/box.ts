@@ -8,7 +8,7 @@ class Box {
     private _height: number = 100;
     private _width: number = BoxWidth;
 
-    private _style: string;
+    private _class: string;
     _bgColor: string = "gray";
     _boxClass: string = "unknown-box";
     get x(): number {
@@ -43,12 +43,12 @@ class Box {
         this._width = value;
     }
 
-    get style(): string {
-        return this._style;
+    get class(): string{
+        return this._class;
     }
 
-    set style(value: string) {
-        this._style = value;
+    set class(value: string) {
+        this._class = value;
     }
 
     connectTo(boxes: Box[]): any {
@@ -68,7 +68,7 @@ class Box {
         return PathHelper.drawLineFrom(point, this);
     }
 
-    create(): SVGElement[] {
+    create(eventPb:any): SVGElement[] {
         var rect: SVGElement = PathHelper.getNode('rect',
             {
                 x: this.x,

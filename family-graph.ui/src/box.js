@@ -34,11 +34,11 @@ class Box {
     set width(value) {
         this._width = value;
     }
-    get style() {
-        return this._style;
+    get class() {
+        return this._class;
     }
-    set style(value) {
-        this._style = value;
+    set class(value) {
+        this._class = value;
     }
     connectTo(boxes) {
         var lines = new Array();
@@ -54,7 +54,7 @@ class Box {
     connectToPoint(point) {
         return PathHelper.drawLineFrom(point, this);
     }
-    create() {
+    create(eventPb) {
         var rect = PathHelper.getNode('rect', {
             x: this.x,
             y: this.y,
@@ -95,4 +95,4 @@ class Box {
             (this.y <= b2.y && b2.y <= (this.y + this.height + BoxVerticalSpace));
     }
 }
-//# sourceMappingURL=box.js.map
+//# sourceMappingURL=Box.js.map

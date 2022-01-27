@@ -20,6 +20,15 @@ class PathHelper {
         return v;
     }
     ;
+    static drawSimpleLine(x1, y1, x2, y2) {
+        let path = "M " + x1 + " " + y1 + " L " + x2 + " " + y2 + " ";
+        var v = this.getNode('path', {
+            d: path,
+            class: 'grid'
+        });
+        return v;
+    }
+    ;
     // draw line from point to box
     static drawLineFrom(point, toBox) {
         if (!point || !toBox)
